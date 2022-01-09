@@ -3,6 +3,7 @@
 #include <Poco/Util/AbstractConfiguration.h>
 #include <Poco/Util/HelpFormatter.h>
 #include <Poco/Util/ServerApplication.h>
+#include <httplib.h>
 
 #include <atomic>
 #include <chrono>
@@ -22,7 +23,7 @@ public:
   void exception() override { RAY_LOG(FATAL) << "unknown exception "; }
 };
 
-class EntryPoint : public Poco::Util::Application
+class EntryPoint : public Poco::Util::ServerApplication
 {
 private:
   std::string _session_dir{};
@@ -168,10 +169,15 @@ public:
     RAY_LOG(INFO) << "main Started: " << _name_of_app;
     printProperties("");
     RAY_LOG_INF << "Starting with input : " << _input_url << " : output : " << _output_url;
+    std::unique_ptr<httplib::Server> svr = std::make_unique<httplib::Server>();
+    svr->listen("localhost", 8080);
+    RAY_LOG_INF << "Server started";
+    waitForTerminationRequest();
+    svr->stop();
     return Application::EXIT_OK;
   }
 };
 
 std::atomic_bool EntryPoint::do_shutdown{false};
 
-POCO_APP_MAIN(EntryPoint);
+POCO_SERVER_MAIN(EntryPoint);

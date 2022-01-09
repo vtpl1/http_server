@@ -5,6 +5,7 @@ add_executable(http_server
 
 target_link_libraries(http_server
     PRIVATE utils
+    PRIVATE httplib
     PRIVATE Poco::Util
     PRIVATE Poco::Net
 )
