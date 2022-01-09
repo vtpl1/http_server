@@ -1,0 +1,9 @@
+{
+    "name": "httpserver",
+    "version-string": "0.1",
+    "dependencies": [
+        "spdlog",
+        "poco",
+        "catch2"
+    ]
+}
