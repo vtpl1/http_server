@@ -7,5 +7,5 @@ git checkout v0.10.1
 git submodule set-branch -b v0.10.1 -- thirdparty/cpp-httplib
 ```
 ```
-git submodule init
+git submodule update --init
 ```

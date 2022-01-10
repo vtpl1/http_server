@@ -9,4 +9,8 @@
         "CMAKE_TOOLCHAIN_FILE": "${workspaceFolder}/../thirdparty/vcpkg/scripts/buildsystems/vcpkg.cmake",
         // "CMAKE_TOOLCHAIN_FILE": "${workspaceFolder}/thirdparty/vcpkg/scripts/buildsystems/vcpkg.cmake",
     },
+    "files.associations": {
+        "thread": "cpp",
+        "memory": "cpp"
+    },
 }

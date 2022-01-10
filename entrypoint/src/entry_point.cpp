@@ -1,3 +1,7 @@
+// *****************************************************
+//  Copyright 2022 Videonetics Technology Pvt Ltd
+// *****************************************************
+
 #include <Poco/ErrorHandler.h>
 #include <Poco/Net/Net.h>
 #include <Poco/Util/AbstractConfiguration.h>
