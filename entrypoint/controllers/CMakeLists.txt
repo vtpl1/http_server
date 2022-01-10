@@ -26,3 +26,6 @@ target_link_libraries(controllers
     PUBLIC httplib
     PRIVATE Poco::Foundation
 )
+
+set_property(TARGET controllers PROPERTY
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

@@ -10,3 +10,6 @@ add_library(datamodels
 target_include_directories(datamodels
     PUBLIC inc
 )
+
+set_property(TARGET datamodels PROPERTY
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

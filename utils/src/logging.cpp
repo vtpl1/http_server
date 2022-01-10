@@ -34,8 +34,8 @@ std::string RayLog::log_dir_{""};
 // %L is loglevel, %P is process id, %t for thread id.
 std::string RayLog::log_format_pattern_ = "[%Y-%m-%d %H:%M:%S,%e %L %P %t] %v";
 std::string RayLog::logger_name_ = "ray_log_sink";
-int64_t RayLog::log_rotation_max_size_ = 1 << 29;
-int64_t RayLog::log_rotation_file_num_ = 10;
+long RayLog::log_rotation_max_size_ = 1 << 29;
+long RayLog::log_rotation_file_num_ = 10;
 bool RayLog::is_failure_signal_handler_installed_ = false;
 
 inline const char* ConstBasename(const char* filepath)
