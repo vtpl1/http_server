@@ -23,7 +23,7 @@ private:
   std::unique_ptr<std::thread> _thread;
 
 public:
-  JobListManager();
+  JobListManager() = default;
   ~JobListManager();
   void start();
   void signal_to_stop();

@@ -5,9 +5,10 @@
 #pragma once
 #ifndef pipeline_h
 #define pipeline_h
+#include <Poco/Process.h>
 #include <atomic>
-#include <thread>
 #include <memory>
+#include <thread>
 
 class Pipeline
 {
@@ -18,12 +19,20 @@ private:
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
 
   std::unique_ptr<std::thread> _thread;
+
+  std::string _command;
+  Poco::Process::Args _args;
+  std::string _initial_directory;
+
+  std::string _composite_command{};
+  int _pid;
+
 public:
-    Pipeline();
-    ~Pipeline();
-    void start();
-    void signal_to_stop();
-    void stop();
-    void run();
+  Pipeline(std::string command, Poco::Process::Args args, std::string initial_directory);
+  ~Pipeline();
+  void start();
+  void signal_to_stop();
+  void stop();
+  void run();
 };
-#endif	// pipeline_h
+#endif // pipeline_h

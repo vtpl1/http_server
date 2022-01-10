@@ -3,10 +3,10 @@
 // *****************************************************
 
 #include "pipeline_manager.h"
-PipelineManager::PipelineManager() {}
+PipelineManager::PipelineManager(JobListManager* jlm) : _jlm(jlm) {}
 
 PipelineManager::~PipelineManager() { stop(); }
-void PipelineManager::start() { _thread.reset(new std::thread(&PipelineManager::run, this)); }
+void PipelineManager::start() { _thread = std::make_unique<std::thread>(&PipelineManager::run, this); }
 void PipelineManager::signal_to_stop() { _do_shutdown = true; }
 void PipelineManager::stop()
 {

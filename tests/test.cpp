@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 
-TEST_CASE("general", "[general]")
+#include "pipeline.h"
+TEST_CASE("test_pipeline", "[pipeline]")
 {
 }

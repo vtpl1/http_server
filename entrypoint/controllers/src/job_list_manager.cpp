@@ -4,10 +4,8 @@
 
 #include "job_list_manager.h"
 
-JobListManager::JobListManager() {}
-
 JobListManager::~JobListManager() { stop(); }
-void JobListManager::start() { _thread.reset(new std::thread(&JobListManager::run, this)); }
+void JobListManager::start() { _thread = std::make_unique<std::thread>(&JobListManager::run, this); }
 void JobListManager::signal_to_stop() { _do_shutdown = true; }
 void JobListManager::stop()
 {

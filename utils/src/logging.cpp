@@ -28,14 +28,14 @@ namespace ray
 #define EL_RAY_FATAL_CHECK_FAILED "RAY_FATAL_CHECK_FAILED"
 
 RayLogLevel RayLog::severity_threshold_ = RayLogLevel::INFO;
-std::string RayLog::app_name_ = "";
-std::string RayLog::log_dir_ = "";
+std::string RayLog::app_name_{""};
+std::string RayLog::log_dir_{""};
 // Format pattern is 2020-08-21 17:00:00,000 I 100 1001 msg.
 // %L is loglevel, %P is process id, %t for thread id.
 std::string RayLog::log_format_pattern_ = "[%Y-%m-%d %H:%M:%S,%e %L %P %t] %v";
 std::string RayLog::logger_name_ = "ray_log_sink";
-long RayLog::log_rotation_max_size_ = 1 << 29;
-long RayLog::log_rotation_file_num_ = 10;
+int64_t RayLog::log_rotation_max_size_ = 1 << 29;
+int64_t RayLog::log_rotation_file_num_ = 10;
 bool RayLog::is_failure_signal_handler_installed_ = false;
 
 inline const char* ConstBasename(const char* filepath)
@@ -243,7 +243,7 @@ void RayLog::UninstallSignalAction()
   sigemptyset(&sig_action.sa_mask);
   sig_action.sa_handler = SIG_DFL;
   for (int signal_num : installed_signals) {
-    RAY_CHECK(sigaction(signal_num, &sig_action, NULL) == 0);
+    RAY_CHECK(sigaction(signal_num, &sig_action, nullptr) == 0);
   }
 #endif
   is_failure_signal_handler_installed_ = false;
@@ -305,7 +305,7 @@ RayLog::RayLog(const char* file_name, int line_number, RayLogLevel severity)
 
 std::ostream& RayLog::Stream()
 {
-  auto logging_provider = reinterpret_cast<LoggingProvider*>(logging_provider_);
+  auto* logging_provider = reinterpret_cast<LoggingProvider*>(logging_provider_);
   // Before calling this function, user should check IsEnabled.
   // When IsEnabled == false, logging_provider_ will be empty.
   return logging_provider->stream();

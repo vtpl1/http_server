@@ -7,7 +7,6 @@
 #include <Poco/Util/AbstractConfiguration.h>
 #include <Poco/Util/HelpFormatter.h>
 #include <Poco/Util/ServerApplication.h>
-#include <httplib.h>
 
 #include <atomic>
 #include <chrono>
@@ -17,7 +16,10 @@
 #include <thread>
 #include <vector>
 
+#include "end_point_manager.h"
+#include "job_list_manager.h"
 #include "logging.h"
+#include "pipeline_manager.h"
 
 class ServerErrorHandler : public Poco::ErrorHandler
 {
@@ -34,9 +36,6 @@ private:
   ServerErrorHandler _serverErrorHandler;
 
   bool _help_requested{false};
-  std::string _input_url{};
-  std::string _output_url{};
-  int _open_or_listen_timeout_in_sec{10};
   std::string _name_of_app{};
 
 public:
@@ -86,11 +85,12 @@ public:
         logger().information(msg);
       }
     } else {
-      for (Poco::Util::AbstractConfiguration::Keys::const_iterator it = keys.begin(); it != keys.end(); ++it) {
+      for (const auto& key : keys) {
         std::string fullKey = base;
-        if (!fullKey.empty())
+        if (!fullKey.empty()) {
           fullKey += '.';
-        fullKey.append(*it);
+        }
+        fullKey.append(key);
         printProperties(fullKey);
       }
     }
@@ -160,7 +160,7 @@ public:
     }
   }
 
-  int main(const ArgVec& args)
+  int main(const ArgVec& args) final
   {
     if (_help_requested) {
       return Application::EXIT_OK;
@@ -172,12 +172,17 @@ public:
     }
     RAY_LOG(INFO) << "main Started: " << _name_of_app;
     printProperties("");
-    RAY_LOG_INF << "Starting with input : " << _input_url << " : output : " << _output_url;
-    std::unique_ptr<httplib::Server> svr = std::make_unique<httplib::Server>();
-    svr->listen("localhost", 8080);
-    RAY_LOG_INF << "Server started";
-    waitForTerminationRequest();
-    svr->stop();
+    {
+      std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
+      std::unique_ptr<EndPointManager> epm = std::make_unique<EndPointManager>(jlm.get(), 8080);
+      std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+
+      RAY_LOG_INF << "Server started";
+      waitForTerminationRequest();
+      RAY_LOG_INF << "Server stop request received";
+    }
+    RAY_LOG_INF << "Server stopped";
+
     return Application::EXIT_OK;
   }
 };
