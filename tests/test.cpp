@@ -9,40 +9,54 @@
 
 #include "pipeline.h"
 
-// TEST_CASE("wrong command should return false", "[pipeline]")
-// {
-//   std::cout << "Started\n";
-//   std::unique_ptr<Pipeline> pipeline = std::make_unique<Pipeline>("temp");
-//   pipeline->start();
-//   REQUIRE_FALSE(pipeline->is_running());
-//   REQUIRE_FALSE(pipeline->is_running());
-//   REQUIRE_FALSE(pipeline->is_running());
-//   std::this_thread::sleep_for(std::chrono::seconds(5));
-//   std::cout << "End\n";
-// }
+TEST_CASE("wrong command should return false", "[pipeline]")
+{
+  std::cout << "Started\n";
+  std::unique_ptr<Pipeline> pipeline = std::make_unique<Pipeline>("temp");
+  pipeline->start();
+  REQUIRE_FALSE(pipeline->is_running());
+  REQUIRE_FALSE(pipeline->is_running());
+  REQUIRE_FALSE(pipeline->is_running());
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+  std::cout << "End\n";
+}
 
 TEST_CASE("spawned command should return true", "[pipeline]")
 {
   std::cout << "Started\n";
-  std::unique_ptr<Pipeline> pipeline = std::make_unique<Pipeline>("F:\\WorkFiles\\http_server\\build\\processes\\Debug\\process_exit_after.exe");
+  std::unique_ptr<Pipeline> pipeline =
+      std::make_unique<Pipeline>("D:\\WorkFiles\\http_server\\build\\processes\\Debug\\process_exit_after.exe");
   pipeline->start();
   REQUIRE(pipeline->is_running());
   REQUIRE(pipeline->is_running());
   REQUIRE(pipeline->is_running());
-  std::this_thread::sleep_for(std::chrono::seconds(20));
+  std::this_thread::sleep_for(std::chrono::seconds(2));
   pipeline->stop();
   std::cout << "End\n";
 }
 
-// TEST_CASE("spawned command should return true once again", "[pipeline]")
-// {
-//   std::cout << "Started\n";
-//   std::unique_ptr<Pipeline> pipeline = std::make_unique<Pipeline>("F:\\WorkFiles\\http_server\\build\\processes\\Debug\\process_exit_properly.exe");
-//   pipeline->start();
-//   REQUIRE(pipeline->is_running());
-//   REQUIRE(pipeline->is_running());
-//   REQUIRE(pipeline->is_running());
-//   std::this_thread::sleep_for(std::chrono::seconds(1));
-//   pipeline->stop();
-//   std::cout << "End\n";
-// }
+TEST_CASE("spawned command should return true once again", "[pipeline]")
+{
+  std::cout << "Started\n";
+  std::unique_ptr<Pipeline> pipeline =
+      std::make_unique<Pipeline>("D:\\WorkFiles\\http_server\\build\\processes\\Debug\\process_exit_properly.exe");
+  pipeline->start();
+  REQUIRE(pipeline->is_running());
+  REQUIRE(pipeline->is_running());
+  REQUIRE(pipeline->is_running());
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  pipeline->stop();
+  std::cout << "End\n";
+}
+
+TEST_CASE("spawned command should return true in 2sec", "[pipeline]")
+{
+  std::cout << "Started\n";
+
+  {
+    std::unique_ptr<Pipeline> pipeline =
+        std::make_unique<Pipeline>("D:\\WorkFiles\\http_server\\build\\processes\\Debug\\process_exit_after.exe");
+    pipeline->start();
+  };
+  std::cout << "End\n";
+}

@@ -171,11 +171,13 @@ public:
       return ExitCode::EXIT_OSERR;
     }
     RAY_LOG(INFO) << "main Started: " << _name_of_app;
-    printProperties("");
+    // printProperties("");
     {
       std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
-      std::unique_ptr<EndPointManager> epm = std::make_unique<EndPointManager>(jlm.get(), 8080);
+      std::unique_ptr<EndPointManager> epm =
+          std::make_unique<EndPointManager>(jlm.get(), "D:\\WorkFiles\\media_converter", 8080);
       std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+      epm->start();
 
       RAY_LOG_INF << "Server started";
       waitForTerminationRequest();

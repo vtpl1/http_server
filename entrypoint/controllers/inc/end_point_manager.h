@@ -25,10 +25,11 @@ private:
   std::unique_ptr<httplib::Server> _svr;
 
   JobListManager* _jlm;
+  std::string _base_dir;
   int _server_port;
 
 public:
-  EndPointManager(JobListManager* jlm, int server_port = 8080);
+  EndPointManager(JobListManager* jlm, std::string base_dir = "./", int server_port = 8080);
   ~EndPointManager();
   void start();
   void signal_to_stop();
