@@ -13,7 +13,11 @@ Pipeline::Pipeline(std::string command, Poco::Process::Args args, std::string in
 {
 }
 Pipeline::~Pipeline() { stop(); }
-void Pipeline::start() { _thread = std::make_unique<std::thread>(&Pipeline::run, this); }
+void Pipeline::start()
+{
+  //_thread = std::make_unique<std::thread>(&Pipeline::run, this);
+  _thread = std::make_unique<std::future<void>>(std::async(std::launch::async, &Pipeline::run, this));
+}
 void Pipeline::signal_to_stop()
 {
   std::unique_lock<std::mutex> lock_thread_running(_thread_running_mutex);
@@ -37,10 +41,19 @@ void Pipeline::stop()
   _is_already_shutting_down = true;
   signal_to_stop();
 
+  // if (_thread) {
+  //   if (_thread->joinable()) {
+  //     _thread->join();
+  //   }
+  // }
   if (_thread) {
-    if (_thread->joinable()) {
-      _thread->join();
+    if (_thread->wait_for(std::chrono::seconds(2)) == std::future_status::timeout) {
+      if (_process_handle) {
+        Poco::Process::kill(*_process_handle);
+      }
+      _thread->wait();
     }
+    _thread = nullptr;
   }
 }
 void Pipeline::run()

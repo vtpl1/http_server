@@ -10,6 +10,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <future>
 
 class Pipeline
 {
@@ -19,7 +20,8 @@ private:
   bool _is_already_shutting_down{false};
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
 
-  std::unique_ptr<std::thread> _thread;
+  // std::unique_ptr<std::thread> _thread;
+  std::unique_ptr<std::future<void>> _thread;
 
   std::string _command;
   Poco::Process::Args _args;
