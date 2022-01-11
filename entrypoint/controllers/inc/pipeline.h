@@ -8,6 +8,7 @@
 #include <Poco/Process.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <thread>
 
 class Pipeline
@@ -25,14 +26,19 @@ private:
   std::string _initial_directory;
 
   std::string _composite_command{};
-  int _pid;
+  std::unique_ptr<Poco::ProcessHandle> _process_handle;
+  std::mutex _thread_running_mutex;
+  std::condition_variable _thread_running_cv;
+  bool _is_thread_running{false};
 
 public:
+  Pipeline(std::string command);
   Pipeline(std::string command, Poco::Process::Args args, std::string initial_directory);
   ~Pipeline();
   void start();
   void signal_to_stop();
   void stop();
   void run();
+  bool is_running();
 };
 #endif // pipeline_h

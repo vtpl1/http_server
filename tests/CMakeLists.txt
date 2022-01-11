@@ -6,6 +6,7 @@ add_executable(tests
 
 target_link_libraries(tests
     PRIVATE Catch2::Catch2WithMain
+    PRIVATE controllers
 )
 
 set_property(TARGET tests PROPERTY
