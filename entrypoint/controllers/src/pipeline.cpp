@@ -16,6 +16,11 @@ Pipeline::~Pipeline() { stop(); }
 void Pipeline::start() { _thread = std::make_unique<std::thread>(&Pipeline::run, this); }
 void Pipeline::signal_to_stop()
 {
+  std::unique_lock<std::mutex> lock_thread_running(_thread_running_mutex);
+  if (!_is_thread_running) {
+    _thread_running_cv.wait(lock_thread_running), [this] { return (_is_thread_running); };
+  }
+
   _do_shutdown = true;
   if (_process_handle) {
     if (_process_handle->id() > 0) {
