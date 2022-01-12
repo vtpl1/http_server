@@ -2,6 +2,7 @@ find_package(Poco REQUIRED Util Net)
 
 add_subdirectory(controllers)
 add_subdirectory(datamodels)
+add_subdirectory(http_server_helper)
 
 add_executable(http_server
     src/entry_point.cpp

@@ -23,7 +23,7 @@ target_include_directories(controllers
 target_link_libraries(controllers
     PRIVATE utils
     PUBLIC datamodels
-    PUBLIC httplib
+    PUBLIC http_server_helper
     PRIVATE Poco::Foundation
 )
 

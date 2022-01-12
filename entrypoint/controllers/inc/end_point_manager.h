@@ -7,10 +7,10 @@
 #define end_point_manager_h
 
 #include <atomic>
-#include <httplib.h>
 #include <memory>
 #include <thread>
 
+#include "http_server.h"
 #include "job_list_manager.h"
 
 class EndPointManager
@@ -22,7 +22,7 @@ private:
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
 
   std::unique_ptr<std::thread> _thread;
-  std::unique_ptr<httplib::Server> _svr;
+  std::unique_ptr<HttpServer> _svr;
 
   JobListManager* _jlm;
   std::string _base_dir;
