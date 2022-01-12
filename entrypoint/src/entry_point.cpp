@@ -19,6 +19,7 @@
 #include "end_point_manager.h"
 #include "job_list_manager.h"
 #include "logging.h"
+#include "pipeline.h"
 #include "pipeline_manager.h"
 
 class ServerErrorHandler : public Poco::ErrorHandler
@@ -160,6 +161,43 @@ public:
     }
   }
 
+  //   int main(const ArgVec& args) final
+  //   {
+  //     if (_help_requested) {
+  //       return Application::EXIT_OK;
+  //     }
+  //     //::ray::RayLog::StartRayLog(name_of_app, ::ray::RayLogLevel::DEBUG, get_session_folder());
+  //     if (signal(SIGINT, EntryPoint::sigHandlerAppClose) == SIG_ERR) {
+  //       RAY_LOG(FATAL) << "Can't attach sigHandlerAppClose signal\n";
+  //       return ExitCode::EXIT_OSERR;
+  //     }
+  //     RAY_LOG(INFO) << "main Started: " << _name_of_app;
+  //     printProperties("");
+  //     {
+  //       std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
+  //       std::unique_ptr<EndPointManager> epm = std::make_unique<EndPointManager>(jlm.get(), 8080);
+  //       std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+
+  //       RAY_LOG_INF << "Server started";
+  //       waitForTerminationRequest();
+  //       RAY_LOG_INF << "Server stop request received";
+  //     }
+  //     RAY_LOG_INF << "Server stopped";
+
+  //     return Application::EXIT_OK;
+  //   }
+  // };
+
+  // To run the http server
+  // .\HttpServer.exe
+
+  // To run the rtmp to hls
+  // .\build\entrypoint\Debug\media_converter.exe -i rtmp://0.0.0.0:9001 -o ./videos/play.m3u8
+
+  // To run the rtsp to rtmp
+  // .\build\entrypoint\Debug\media_converter.exe -i rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/ -o
+  // rtmp://localhost:9001
+
   int main(const ArgVec& args) final
   {
     if (_help_requested) {
@@ -171,15 +209,40 @@ public:
       return ExitCode::EXIT_OSERR;
     }
     RAY_LOG(INFO) << "main Started: " << _name_of_app;
-    printProperties("");
     {
-      std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
-      std::unique_ptr<EndPointManager> epm = std::make_unique<EndPointManager>(jlm.get(), 8080);
-      std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+      std::string command;
+      std::vector<std::string> args;
 
-      RAY_LOG_INF << "Server started";
+      command.append("./HttpServer.exe");
+      std::unique_ptr<Pipeline> http_server = std::make_unique<Pipeline>(command);
+
+      command.clear();
+      command.append("./build/entrypoint/Debug/media_converter.exe");
+      args.push_back("-i");
+      args.push_back("rtmp://0.0.0.0:9001");
+      args.push_back("-o");
+      args.push_back("./videos/play.m3u8");
+      std::unique_ptr<Pipeline> rtmp_to_hls = std::make_unique<Pipeline>(command, args, "");
+
+      command.clear();
+      args.clear();
+      command.append("./build/entrypoint/Debug/media_converter.exe");
+      args.push_back("-i");
+      args.push_back("rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/");
+      args.push_back("-o");
+      args.push_back("rtmp://localhost:9001");
+      std::unique_ptr<Pipeline> rtsp_to_rtmp = std::make_unique<Pipeline>(command, args, "");
+
+      http_server->start();
+      rtmp_to_hls->start();
+      rtsp_to_rtmp->start();
+
       waitForTerminationRequest();
-      RAY_LOG_INF << "Server stop request received";
+      std::cout << "stop requested" << std::endl;
+
+      http_server->stop();
+      rtmp_to_hls->stop();
+      rtsp_to_rtmp->stop();
     }
     RAY_LOG_INF << "Server stopped";
 
