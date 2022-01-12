@@ -5,6 +5,7 @@
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Path.h>
+#include <regex>
 
 #include "file_request_handler.h"
 #include "generic_http_request_handler_factory.h"
@@ -13,8 +14,12 @@
 #include "options_request_handler.h"
 
 GenericHttpRequestHandlerFactory::GenericHttpRequestHandlerFactory(
-    std::map<std::string, std::string> base_dirs, std::map<std::string, std::string> file_extension_and_mimetype_map)
-    : _base_dirs(std::move(base_dirs)), _file_extension_and_mimetype_map(std::move(file_extension_and_mimetype_map))
+    std::map<std::string, std::string> base_dirs, std::map<std::string, std::string> file_extension_and_mimetype_map,
+    std::map<std::string, int> pattern_to_delay_map,
+    std::map<std::string, std::function<void(void)>> pattern_to_callback_map)
+    : _base_dirs(std::move(base_dirs)), _file_extension_and_mimetype_map(std::move(file_extension_and_mimetype_map)),
+      _pattern_to_delay_map(std::move(pattern_to_delay_map)),
+      _pattern_to_callback_map(std::move(pattern_to_callback_map))
 {
 }
 
@@ -79,23 +84,30 @@ GenericHttpRequestHandlerFactory::handle_file_request(const Poco::Net::HTTPServe
 {
   for (const auto& entry : _base_dirs) {
     // Prefix match
-    if (req.getURI().compare(0, entry.first.size(), entry.first) == 0) {
-      std::string sub_path = "/" + req.getURI().substr(entry.first.size());
+    auto const req_uri = std::string(req.getURI());
+    if (req_uri.compare(0, entry.first.size(), entry.first) == 0) {
+      std::string sub_path = "/" + req_uri.substr(entry.first.size());
       if (is_valid_path(sub_path)) {
         auto path = entry.second + sub_path;
         if (path.back() == '/') {
           path += "index.html";
         }
         Poco::Path path1(path);
-        if (path1.isFile()) {
-          std::string ext = path1.getExtension();
-          std::string content_type = "text/plain";
-          auto it = _file_extension_and_mimetype_map.find(ext);
-          if (it != _file_extension_and_mimetype_map.end()) {
-            content_type = it->second;
-          }
-          return new FileRequestHandler(path1.toString(), content_type);
+        std::string ext = path1.getExtension();
+        std::string content_type = "text/plain";
+        auto it = _file_extension_and_mimetype_map.find(ext);
+        if (it != _file_extension_and_mimetype_map.end()) {
+          content_type = it->second;
         }
+        int delay_val = 0;
+        for (auto&& kv : _pattern_to_delay_map) {
+          auto const regex = std::regex(kv.first);
+          if (std::regex_search(req_uri, regex)) {
+            delay_val = kv.second;
+            break;
+          }
+        }
+        return new FileRequestHandler(path1.toString(), content_type);
       }
     }
   }
