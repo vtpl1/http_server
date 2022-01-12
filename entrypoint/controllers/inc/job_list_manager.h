@@ -8,6 +8,8 @@
 #include <atomic>
 #include <memory>
 #include <thread>
+#include <vector>
+#include <mutex>
 
 #include "job.h"
 
@@ -21,6 +23,10 @@ private:
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
 
   std::unique_ptr<std::thread> _thread;
+  std::mutex _jobs_mutex;
+  std::mutex _running_jobs_mutex;
+  std::vector<Job> _jobs;
+  std::vector<Job> _running_jobs;
 
 public:
   JobListManager() = default;
@@ -29,6 +35,13 @@ public:
   void signal_to_stop();
   void stop();
   void run();
+  void add_job(Job job);
+  void delete_job(Job job);
+  std::vector<Job> get_jobs();
+  void add_running_job(Job job);
+  void delete_running_job(Job job);
+  std::vector<Job> get_running_jobs();
+
 };
 
 #endif // job_list_manager_h

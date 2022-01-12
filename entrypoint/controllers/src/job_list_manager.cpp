@@ -27,3 +27,18 @@ void JobListManager::run()
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }
+
+void JobListManager::add_job(Job job) { std::lock_guard<std::mutex> lock(_jobs_mutex); }
+void JobListManager::delete_job(Job job) { std::lock_guard<std::mutex> lock(_jobs_mutex); }
+std::vector<Job> JobListManager::get_jobs()
+{
+  std::lock_guard<std::mutex> lock(_jobs_mutex);
+  return _jobs;
+}
+void JobListManager::add_running_job(Job job) { std::lock_guard<std::mutex> lock(_running_jobs_mutex); }
+void JobListManager::delete_running_job(Job job) { std::lock_guard<std::mutex> lock(_running_jobs_mutex); }
+std::vector<Job> JobListManager::get_running_jobs()
+{
+  std::lock_guard<std::mutex> lock(_running_jobs_mutex);
+  return _running_jobs;
+}

@@ -17,6 +17,7 @@ public:
   ~Job() = default;
   int16_t id{0};
   JobState job_state{JobState::IDLE};
+  std::string channel_id{};
   std::string input{};
   std::string output{};
 };
