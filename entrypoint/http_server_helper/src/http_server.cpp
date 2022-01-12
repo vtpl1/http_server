@@ -64,14 +64,18 @@ HttpServer::~HttpServer() { stop(); }
 
 bool HttpServer::set_mount_point(const std::string& mount_point, const std::string& dir)
 {
-  Poco::File f(dir);
-  if (f.isDirectory())
-  {
-    std::string mnt = !mount_point.empty() ? mount_point : "/";
-    if (!mnt.empty() && mnt[0] == '/') {
-      _base_dirs.emplace(mnt, dir);
-      return true;
+  try {
+    Poco::File f(dir);
+    if (f.isDirectory()) {
+      std::string mnt = !mount_point.empty() ? mount_point : "/";
+      if (!mnt.empty() && mnt[0] == '/') {
+        _base_dirs.emplace(mnt, dir);
+        return true;
+      }
     }
+
+  } catch (const std::exception& e) {
+    RAY_LOG_ERR << " " << dir << " " << e.what();
   }
   return false;
 }

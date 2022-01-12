@@ -161,32 +161,33 @@ public:
     }
   }
 
-  //   int main(const ArgVec& args) final
-  //   {
-  //     if (_help_requested) {
-  //       return Application::EXIT_OK;
-  //     }
-  //     //::ray::RayLog::StartRayLog(name_of_app, ::ray::RayLogLevel::DEBUG, get_session_folder());
-  //     if (signal(SIGINT, EntryPoint::sigHandlerAppClose) == SIG_ERR) {
-  //       RAY_LOG(FATAL) << "Can't attach sigHandlerAppClose signal\n";
-  //       return ExitCode::EXIT_OSERR;
-  //     }
-  //     RAY_LOG(INFO) << "main Started: " << _name_of_app;
-  //     printProperties("");
-  //     {
-  //       std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
-  //       std::unique_ptr<EndPointManager> epm = std::make_unique<EndPointManager>(jlm.get(), 8080);
-  //       std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+  int main(const ArgVec& args)
+  {
+    if (_help_requested) {
+      return Application::EXIT_OK;
+    }
+    //::ray::RayLog::StartRayLog(name_of_app, ::ray::RayLogLevel::DEBUG, get_session_folder());
+    if (signal(SIGINT, EntryPoint::sigHandlerAppClose) == SIG_ERR) {
+      RAY_LOG(FATAL) << "Can't attach sigHandlerAppClose signal\n";
+      return ExitCode::EXIT_OSERR;
+    }
+    RAY_LOG(INFO) << "main Started: " << _name_of_app;
+    // printProperties("");
+    {
+      std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
+      std::unique_ptr<EndPointManager> epm =
+          std::make_unique<EndPointManager>(jlm.get(), config().getString("system.currentDir"), 8080);
+      std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+      epm->start();
 
-  //       RAY_LOG_INF << "Server started";
-  //       waitForTerminationRequest();
-  //       RAY_LOG_INF << "Server stop request received";
-  //     }
-  //     RAY_LOG_INF << "Server stopped";
+      RAY_LOG_INF << "Server started";
+      waitForTerminationRequest();
+      RAY_LOG_INF << "Server stop request received";
+    }
+    RAY_LOG_INF << "Server stopped";
 
-  //     return Application::EXIT_OK;
-  //   }
-  // };
+    return Application::EXIT_OK;
+  }
 
   // To run the http server
   // .\HttpServer.exe
@@ -198,7 +199,7 @@ public:
   // .\build\entrypoint\Debug\media_converter.exe -i rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/ -o
   // rtmp://localhost:9001
 
-  int main(const ArgVec& args) final
+  int main1(const ArgVec& args)
   {
     if (_help_requested) {
       return Application::EXIT_OK;
