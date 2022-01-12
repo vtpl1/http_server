@@ -9,11 +9,13 @@ add_library(controllers
     src/job_list_manager.cpp
     src/pipeline_manager.cpp
     src/pipeline.cpp
+    src/command_receiver.cpp
 
     inc/end_point_manager.h
     inc/job_list_manager.h
     inc/pipeline_manager.h
     inc/pipeline.h
+    inc/command_receiver.h
 )
 
 target_include_directories(controllers

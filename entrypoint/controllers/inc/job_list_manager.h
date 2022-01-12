@@ -36,12 +36,11 @@ public:
   void stop();
   void run();
   void add_job(Job job);
-  void delete_job(Job job);
+  void delete_job(size_t pos);
   std::vector<Job> get_jobs();
   void add_running_job(Job job);
-  void delete_running_job(Job job);
+  void delete_running_job(size_t pos);
   std::vector<Job> get_running_jobs();
-
 };
 
 #endif // job_list_manager_h

@@ -13,13 +13,19 @@ enum class JobState { IDLE, RUNNING, END };
 class Job
 {
 public:
-  Job() = default;
+  Job(std::string channel_id);
   ~Job() = default;
   int16_t id{0};
   JobState job_state{JobState::IDLE};
   std::string channel_id{};
   std::string input{};
   std::string output{};
+  // bool operator==(const Job& job);
+  bool compare(const Job& other) const;
 };
+inline bool operator==(const Job& lhs, const Job& rhs)
+{
+  return lhs.compare(rhs);
+}
 
 #endif // job_h

@@ -179,10 +179,16 @@ public:
           std::make_unique<EndPointManager>(jlm.get(), config().getString("system.currentDir"), 8080);
       std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
       epm->start();
-
+      Job job("1");
+      jlm->add_job(job);
+      jlm->start();
+      plm->start();
       RAY_LOG_INF << "Server started";
       waitForTerminationRequest();
       RAY_LOG_INF << "Server stop request received";
+      epm->stop();
+      jlm->stop();
+      plm->stop();
     }
     RAY_LOG_INF << "Server stopped";
 

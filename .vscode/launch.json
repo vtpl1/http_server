@@ -16,20 +16,20 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "http_server",
+            "name": "entrypoint",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/entrypoint/Debug/http_server.exe",
+            "program": "${workspaceFolder}/build/entrypoint/Debug/entrypoint.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "integratedTerminal",
             "linux": {
-                "name": "http_server",
+                "name": "entrypoint",
                 "type": "cppdbg",
                 "request": "launch",
-                "program": "${workspaceFolder}/build/entrypoint/http_server",
+                "program": "${workspaceFolder}/build/entrypoint/entrypoint",
                 "args": [],
                 "stopAtEntry": false,
                 "cwd": "${workspaceFolder}",
@@ -44,6 +44,7 @@
                     }
                 ]
             }
-        }
+        },
+
     ]
 }

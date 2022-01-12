@@ -8,6 +8,7 @@
 #include <string>
 
 #include "pipeline.h"
+#include "job.h"
 
 TEST_CASE("wrong command should return false", "[pipeline]")
 {
@@ -52,3 +53,10 @@ TEST_CASE("spawned command should return true", "[pipeline]")
 //   pipeline->stop();
 //   std::cout << "End\n";
 // }
+
+TEST_CASE("jobs are equal", "[jobs]")
+{
+  Job job1("1");
+  Job job2("1");
+  REQUIRE(job1 == job2);
+}
