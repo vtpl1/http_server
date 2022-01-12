@@ -80,6 +80,16 @@ bool HttpServer::set_mount_point(const std::string& mount_point, const std::stri
   }
   return false;
 }
+
+void HttpServer::set_delay_for_mount_point(const std::string& pattern, const int delay_in_sec)
+{
+  _pattern_to_delay_map[pattern] = delay_in_sec;
+}
+void HttpServer::set_callback_handler(const std::string& pattern, std::function<void(void)> handler)
+{
+  _pattern_to_callback_map[pattern] = handler;
+}
+
 void HttpServer::set_file_extension_and_mimetype_mapping(const char* ext, const char* mime)
 {
   _file_extension_and_mimetype_map[ext] = mime;

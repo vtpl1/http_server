@@ -26,9 +26,6 @@ GenericHttpRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServ
   }
   if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET) {
     Poco::Net::HTTPRequestHandler* ret = handle_file_request(request);
-    if (ret == nullptr) {
-      return new NotFoundRequestHandler();
-    }
     return ret;
   }
   return new MethodNotSupportedRequestHandler();
@@ -102,5 +99,5 @@ GenericHttpRequestHandlerFactory::handle_file_request(const Poco::Net::HTTPServe
       }
     }
   }
-  return nullptr;
+  return new NotFoundRequestHandler();
 }
