@@ -1,0 +1,35 @@
+/* 1x1 */
+v1_1 {
+    width: 90vw;
+    height: 80vh;
+}
+  
+/* 2x2 */
+v2_2 {
+    width: 45vw;
+    height: 40vh;
+}
+
+/* 3x3 */
+v3_3 {
+    width: 30vw;
+    height: 30vh;
+}
+  
+/* 4x4 */
+v4_4 {
+    width: 24vw;
+    height: 22vh;
+}
+
+/* 5x5 */
+v5_5 {
+    width: 19vw;
+    height: 18vh;
+}
+
+/* nxn */
+vn_n {
+    width: 10vw;
+    height: 10vh;
+}

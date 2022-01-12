@@ -1,0 +1,13 @@
+body, .form-control:valid, .btn-outline-primary {
+  background-color:darkslategrey;
+  color: white;
+}
+
+video {
+  position: relative;
+  margin: 0 auto;
+  background-color: black;
+  border: 2px solid rgb(0, 0, 0);
+  margin-left: 1px;
+  margin-right: 1px;
+}
