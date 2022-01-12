@@ -14,27 +14,24 @@
 
 GenericHttpRequestHandlerFactory::GenericHttpRequestHandlerFactory(
     std::map<std::string, std::string> base_dirs, std::map<std::string, std::string> file_extension_and_mimetype_map)
-    : _base_dirs(base_dirs), _file_extension_and_mimetype_map(file_extension_and_mimetype_map)
+    : _base_dirs(std::move(base_dirs)), _file_extension_and_mimetype_map(std::move(file_extension_and_mimetype_map))
 {
 }
-
-GenericHttpRequestHandlerFactory::~GenericHttpRequestHandlerFactory() {}
 
 Poco::Net::HTTPRequestHandler*
 GenericHttpRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
 {
   if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS) {
     return new OptionsRequestHandler();
-  } else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET) {
+  }
+  if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET) {
     Poco::Net::HTTPRequestHandler* ret = handle_file_request(request);
     if (ret == nullptr) {
       return new NotFoundRequestHandler();
     }
     return ret;
-  } else {
-    return new MethodNotSupportedRequestHandler();
   }
-  return new NotFoundRequestHandler();
+  return new MethodNotSupportedRequestHandler();
 }
 
 bool GenericHttpRequestHandlerFactory::is_valid_path(const std::string& path)
@@ -60,9 +57,9 @@ bool GenericHttpRequestHandlerFactory::is_valid_path(const std::string& path)
     }
     // assert(len > 0);
 
-    if (!path.compare(beg, len, ".")) {
+    if (path.compare(beg, len, ".") == 0) {
       ;
-    } else if (!path.compare(beg, len, "..")) {
+    } else if (path.compare(beg, len, "..") == 0) {
       if (level == 0) {
         return false;
       }
@@ -85,7 +82,7 @@ GenericHttpRequestHandlerFactory::handle_file_request(const Poco::Net::HTTPServe
 {
   for (const auto& entry : _base_dirs) {
     // Prefix match
-    if (!req.getURI().compare(0, entry.first.size(), entry.first)) {
+    if (req.getURI().compare(0, entry.first.size(), entry.first) == 0) {
       std::string sub_path = "/" + req.getURI().substr(entry.first.size());
       if (is_valid_path(sub_path)) {
         auto path = entry.second + sub_path;

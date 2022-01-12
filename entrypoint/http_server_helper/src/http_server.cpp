@@ -7,7 +7,7 @@
 
 #include "generic_http_request_handler_factory.h"
 #include "http_server.h"
-#include "logging.h"
+// #include "logging.h"
 
 constexpr int MAX_REQUEST_QUEUE_SIZE = 100;
 constexpr int MAX_THREADS = 16;
@@ -39,8 +39,9 @@ void HttpServer::start()
   Poco::Net::ServerSocket svs(_port);
   svs.setReuseAddress(true);
   svs.setReusePort(false);
-  _srv = std::make_unique<Poco::Net::HTTPServer>(
-      new GenericHttpRequestHandlerFactory(_base_dirs, _file_extension_and_mimetype_map), svs, http_server_params);
+  Poco::Net::HTTPRequestHandlerFactory::Ptr http_request_handler_factory =
+      new GenericHttpRequestHandlerFactory(_base_dirs, _file_extension_and_mimetype_map);
+  _srv = std::make_unique<Poco::Net::HTTPServer>(http_request_handler_factory, svs, http_server_params);
   _srv->start();
 }
 
@@ -75,7 +76,7 @@ bool HttpServer::set_mount_point(const std::string& mount_point, const std::stri
     }
 
   } catch (const std::exception& e) {
-    RAY_LOG_ERR << " " << dir << " " << e.what();
+    // RAY_LOG_ERR << " " << dir << " " << e.what();
   }
   return false;
 }

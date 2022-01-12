@@ -9,7 +9,7 @@
 #include "logging.h"
 
 FileRequestHandler::FileRequestHandler(std::string base_path, std::string content_type)
-    : _base_path(base_path), _content_type(content_type)
+    : _base_path(std::move(base_path)), _content_type(std::move(content_type))
 {
 }
 void FileRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
@@ -18,7 +18,6 @@ void FileRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
     response.setContentType(_content_type);
     Poco::File request_file(_base_path);
     Poco::FileInputStream finputstr(request_file.path());
-
     std::streamsize fileSize = request_file.getSize();
     response.setContentLength(fileSize);
     std::ostream& ostr = response.send();
@@ -27,7 +26,6 @@ void FileRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
       ostr.flush();
     }
     finputstr.close();
-
   } catch (const std::exception& e) {
     response.setContentType("text/plain");
     response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
@@ -35,6 +33,6 @@ void FileRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
     response.setReason(str);
     response.setContentLength(str.length());
     response.send() << str;
-    RAY_LOG_ERR << e.what();
+    RAY_LOG_ERR << e.what() << " " << _base_path;
   }
 }

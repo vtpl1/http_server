@@ -7,7 +7,7 @@
 
 #include "logging.h"
 #include "pipeline.h"
-Pipeline::Pipeline(std::string command) : Pipeline(command, std::vector<std::string>(), Poco::Path::current()) {}
+Pipeline::Pipeline(std::string command) : Pipeline(std::move(command), std::vector<std::string>(), Poco::Path::current()) {}
 Pipeline::Pipeline(std::string command, Poco::Process::Args args, std::string initial_directory)
     : _command(std::move(command)), _args(std::move(args)), _initial_directory(std::move(initial_directory))
 {
@@ -22,7 +22,7 @@ void Pipeline::signal_to_stop()
 {
   std::unique_lock<std::mutex> lock_thread_running(_thread_running_mutex);
   if (!_is_thread_running) {
-    _thread_running_cv.wait(lock_thread_running), [this] { return (_is_thread_running); };
+    _thread_running_cv.wait(lock_thread_running);
   }
 
   _do_shutdown = true;
@@ -75,7 +75,7 @@ void Pipeline::run()
     {
       std::lock_guard<std::mutex> lock_thread_running(_thread_running_mutex);
       try {
-        _process_handle.reset(new Poco::ProcessHandle(Poco::Process::launch(_command, _args, _initial_directory)));
+        _process_handle = std::make_unique<Poco::ProcessHandle>(Poco::Process::launch(_command, _args, _initial_directory));
       } catch (Poco::Exception& e) {
         RAY_LOG_ERR << "MONOTOSH:: Poco::Exception " << e.what();
       } catch (const std::exception& e) {
@@ -117,7 +117,7 @@ bool Pipeline::is_running()
   RAY_LOG_INF << "is running started";
   std::unique_lock<std::mutex> lock_thread_running(_thread_running_mutex);
   if (!_is_thread_running) {
-    _thread_running_cv.wait(lock_thread_running), [this] { return (_is_thread_running); };
+    _thread_running_cv.wait(lock_thread_running);
   }
   RAY_LOG_INF << "is running returned";
   if (_process_handle) {
