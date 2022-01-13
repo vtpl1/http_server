@@ -9,6 +9,7 @@
 
 #include "file_request_handler.h"
 #include "generic_http_request_handler_factory.h"
+#include "logging.h"
 #include "method_not_supported_request_handler.h"
 #include "not_found_request_handler.h"
 #include "options_request_handler.h"
@@ -16,10 +17,10 @@
 GenericHttpRequestHandlerFactory::GenericHttpRequestHandlerFactory(
     std::map<std::string, std::string> base_dirs, std::map<std::string, std::string> file_extension_and_mimetype_map,
     std::map<std::string, int> pattern_to_delay_map,
-    std::map<std::string, std::function<void(void)>> pattern_to_callback_map)
+    std::map<std::string, std::function<void(std::string)>> pattern_to_callback_map)
     : _base_dirs(std::move(base_dirs)), _file_extension_and_mimetype_map(std::move(file_extension_and_mimetype_map)),
       _pattern_to_delay_map(std::move(pattern_to_delay_map)),
-      _pattern_to_callback_map(std::move(pattern_to_callback_map))
+      _pattern_to_callback_map(std::move(pattern_to_callback_map)), _server_stopped_event(new ServerStoppedEvent())
 {
 }
 
@@ -100,16 +101,28 @@ GenericHttpRequestHandlerFactory::handle_file_request(const Poco::Net::HTTPServe
           content_type = it->second;
         }
         int delay_val = 0;
-        for (auto&& kv : _pattern_to_delay_map) {
+        // for (auto&& kv : _pattern_to_delay_map) {
+        //   auto const regex = std::regex(kv.first);
+        //   if (std::regex_search(req_uri, regex)) {
+        //     delay_val = kv.second;
+        //     // RAY_LOG_INF << "Adding delay in serving: " << req_uri << " sec: " << delay_val;
+        //     delay_val = 0;
+        //     break;
+        //   }
+        // }
+        for (auto&& kv : _pattern_to_callback_map) {
           auto const regex = std::regex(kv.first);
           if (std::regex_search(req_uri, regex)) {
-            delay_val = kv.second;
+            kv.second(req_uri);
+            // RAY_LOG_INF << "Adding delay in serving: " << req_uri << " sec: " << delay_val;
             break;
           }
         }
-        return new FileRequestHandler(path1.toString(), content_type);
+        return new FileRequestHandler(path1.toString(), content_type, _server_stopped_event, delay_val);
       }
     }
   }
   return new NotFoundRequestHandler();
 }
+
+void GenericHttpRequestHandlerFactory::signal_to_stop() { _server_stopped_event->signal_to_stop(); }

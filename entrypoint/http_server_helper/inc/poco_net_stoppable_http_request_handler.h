@@ -6,18 +6,20 @@
 #ifndef poco_net_stoppable_http_request_handler_h
 #define poco_net_stoppable_http_request_handler_h
 #include <Poco/Net/HTTPRequestHandler.h>
-#include <Poco/Net/HTTPRequestHandlerFactory.h>
+
+#include "server_stopped_event.h"
 
 class PocoNetStoppableHTTPRequestHandler : public Poco::Net::HTTPRequestHandler
 {
 private:
 protected:
   bool stopped{false};
-    Poco::Net::HTTPRequestHandlerFactory::Ptr _http_request_handler_factory;
+  ServerStoppedEvent::Ptr _server_stopped_event;
+
 public:
-  PocoNetStoppableHTTPRequestHandler(Poco::Net::HTTPRequestHandlerFactory::Ptr http_request_handler_factory);
-  ~PocoNetStoppableHTTPRequestHandler();
-  void onServerStopped();
+  PocoNetStoppableHTTPRequestHandler(ServerStoppedEvent::Ptr server_stopped_event);
+  virtual ~PocoNetStoppableHTTPRequestHandler();
+  void onServerStopped(const bool& abortCurrent);
 };
 
 #endif // poco_net_stoppable_http_request_handler_h

@@ -5,7 +5,6 @@
 #include <Poco/File.h>
 #include <Poco/Path.h>
 
-#include "generic_http_request_handler_factory.h"
 #include "http_server.h"
 // #include "logging.h"
 
@@ -28,6 +27,7 @@ HttpServer::HttpServer(int port) : _port(port)
   _file_extension_and_mimetype_map["woff2"] = "font/x-woff2";
   _file_extension_and_mimetype_map["ts"] = "video/mp2t";
   _file_extension_and_mimetype_map["m3u8"] = "application/vnd.apple.mpegurl";
+  _file_extension_and_mimetype_map["m3u8.tmp"] = "application/vnd.apple.mpegurl";
   _file_extension_and_mimetype_map["pdf"] = "application/pdf";
 }
 void HttpServer::start()
@@ -38,9 +38,9 @@ void HttpServer::start()
   Poco::Net::ServerSocket svs(_port);
   svs.setReuseAddress(true);
   svs.setReusePort(false);
-  Poco::Net::HTTPRequestHandlerFactory::Ptr http_request_handler_factory = new GenericHttpRequestHandlerFactory(
+  _generic_http_request_handler_factory = new GenericHttpRequestHandlerFactory(
       _base_dirs, _file_extension_and_mimetype_map, _pattern_to_delay_map, _pattern_to_callback_map);
-  _srv = std::make_unique<Poco::Net::HTTPServer>(http_request_handler_factory, svs, http_server_params);
+  _srv = std::make_unique<Poco::Net::HTTPServer>(_generic_http_request_handler_factory, svs, http_server_params);
   _srv->start();
 }
 void HttpServer::signal_to_stop()
@@ -49,6 +49,9 @@ void HttpServer::signal_to_stop()
     return;
   }
   _is_already_shutting_down = true;
+  if (_generic_http_request_handler_factory) {
+    _generic_http_request_handler_factory->signal_to_stop();
+  }
   if (_srv) {
     _srv->stopAll(true);
   }
@@ -79,7 +82,7 @@ void HttpServer::set_delay_for_mount_point(const std::string& pattern, const int
 {
   _pattern_to_delay_map[pattern] = delay_in_sec;
 }
-void HttpServer::set_callback_handler(const std::string& pattern, std::function<void(void)> handler)
+void HttpServer::set_callback_handler(const std::string& pattern, std::function<void(std::string)> handler)
 {
   _pattern_to_callback_map[pattern] = handler;
 }

@@ -6,11 +6,16 @@
 // 	}
 // }
 
+function delayedStartLoad(index) {
+	// console.log("Starting " + index)
+	// init_hls_object(index)
+}
+
 function init_hls_object(id, index) {
 	if (Hls.isSupported()) {
 		window.g_hls_objects[index] = new Hls(config);
 		if (window.g_hls_objects[index] != undefined && window.g_hls_objects[index] != null) {
-			window.g_hls_objects[index].attachMedia(document.getElementById(id));	
+			window.g_hls_objects[index].attachMedia(document.getElementById(id));
 			window.g_hls_objects[index].on(Hls.Events.MEDIA_ATTACHED, function () {
 				console.log("Media Attached");
 				window.g_hls_objects[index].loadSource(window.g_source_list[index]);
@@ -23,17 +28,18 @@ function init_hls_object(id, index) {
 				console.error("Media Detached");
 				window.g_hls_objects[index].attachMedia(document.getElementById(id));
 			});*/
-			
+
 			window.g_hls_objects[index].on(Hls.Events.ERROR, function(event, data) {
 				if (data.fatal) {
 					// console.error('Fatal error :' + data.details);
 					switch (data.type) {
 						case Hls.ErrorTypes.MEDIA_ERROR:
-							console.error('MEDIA_ERROR :' + data.details);
+							console.error('MONOTOSH MEDIA_ERROR :' + data.details);
 							window.g_hls_objects[index].recoverMediaError();
 							break;
 						case Hls.ErrorTypes.NETWORK_ERROR:
-							console.error('NETWORK_ERROR :' + data.details);
+							console.error('MONOTOSH NETWORK_ERROR :' + data.details);
+							// setTimeout(delayedStartLoad, 5*1000, index);
 							window.g_hls_objects[index].startLoad();
 							// window.g_hls_objects[index].recoverMediaError();
 							break;

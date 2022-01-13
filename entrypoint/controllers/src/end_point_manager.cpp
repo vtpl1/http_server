@@ -3,6 +3,7 @@
 // *****************************************************
 
 #include <Poco/Path.h>
+#include <regex>
 
 #include "end_point_manager.h"
 #include "logging.h"
@@ -35,6 +36,7 @@ void EndPointManager::stop()
     }
   }
 }
+void EndPointManager::on_request_event(std::string req_url) { RAY_LOG_INF << req_url; }
 void EndPointManager::run()
 {
   _svr = std::make_unique<HttpServer>(_server_port);
@@ -68,6 +70,8 @@ void EndPointManager::run()
       RAY_LOG_ERR << url << " not found";
     }
   }
+  //_svr->set_delay_for_mount_point(".m3u8", 30);
+  _svr->set_callback_handler(".m3u8", [this](std::string req_uri) { on_request_event(req_uri); });
 
   //_svr->listen("0.0.0.0", 8080);
   _svr->start();

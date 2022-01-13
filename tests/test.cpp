@@ -1,3 +1,5 @@
+#include <Poco/Exception.h>
+#include <Poco/File.h>
 #include <catch2/catch.hpp>
 #include <cctype>
 #include <iomanip>
@@ -7,8 +9,8 @@
 #include <sstream>
 #include <string>
 
-#include "pipeline.h"
 #include "job.h"
+#include "pipeline.h"
 
 TEST_CASE("wrong command should return false", "[pipeline]")
 {
@@ -26,8 +28,7 @@ TEST_CASE("spawned command should return true", "[pipeline]")
 {
   std::chrono::time_point<std::chrono::system_clock> entry_time = std::chrono::system_clock::now();
   std::cout << "Started\n";
-  std::unique_ptr<Pipeline> pipeline =
-      std::make_unique<Pipeline>("./HttpServer.exe");
+  std::unique_ptr<Pipeline> pipeline = std::make_unique<Pipeline>("./HttpServer.exe");
   pipeline->start();
   REQUIRE(pipeline->is_running());
   REQUIRE(pipeline->is_running());
@@ -59,4 +60,11 @@ TEST_CASE("jobs are equal", "[jobs]")
   Job job1("1");
   Job job2("1");
   REQUIRE(job1 == job2);
+}
+
+TEST_CASE("file", "[files]")
+{
+  Poco::File file("D:\\WorkFiles\\http_server\\static_html\\favicon1.ico");
+
+  REQUIRE_THROWS_AS(file.isFile(), Poco::FileNotFoundException);
 }

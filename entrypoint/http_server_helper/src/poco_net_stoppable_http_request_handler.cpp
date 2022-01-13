@@ -6,17 +6,14 @@
 
 #include "poco_net_stoppable_http_request_handler.h"
 
-PocoNetStoppableHTTPRequestHandler::PocoNetStoppableHTTPRequestHandler(
-    Poco::Net::HTTPRequestHandlerFactory::Ptr http_request_handler_factory)
-    : _http_request_handler_factory(http_request_handler_factory)
+PocoNetStoppableHTTPRequestHandler::PocoNetStoppableHTTPRequestHandler(ServerStoppedEvent::Ptr server_stopped_event)
+    : _server_stopped_event(server_stopped_event)
 {
-  _http_request_handler_factory->serverStopped +=
-      Poco::delegate(this, &PocoNetStoppableHTTPRequestHandler::onServerStopped);
+  _server_stopped_event->serverStopped += Poco::delegate(this, &PocoNetStoppableHTTPRequestHandler::onServerStopped);
 }
 
 PocoNetStoppableHTTPRequestHandler::~PocoNetStoppableHTTPRequestHandler()
 {
-  _http_request_handler_factory->serverStopped -=
-      Poco::delegate(this, &PocoNetStoppableHTTPRequestHandler::onServerStopped);
+  _server_stopped_event->serverStopped -= Poco::delegate(this, &PocoNetStoppableHTTPRequestHandler::onServerStopped);
 }
-void PocoNetStoppableHTTPRequestHandler::onServerStopped() { stopped = true; }
+void PocoNetStoppableHTTPRequestHandler::onServerStopped(const bool& abortCurrent) { stopped = true; }

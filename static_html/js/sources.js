@@ -1,5 +1,5 @@
 window.g_source_list = new Array(
-	"/../videos/play.m3u8.tmp"
+	"/../videos/1/play.m3u8.tmp"
 )
 window.g_source_list_1 = new Array(
 	"https://streaming.videonetics.com:8443/live/hls/719b514b-f449-12b9-2587-10fab7916924_HLS_SERVER_MI/play.m3u8",	// Yojaka-192.168.1.196
