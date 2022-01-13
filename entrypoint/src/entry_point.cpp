@@ -21,6 +21,7 @@
 #include "logging.h"
 #include "pipeline.h"
 #include "pipeline_manager.h"
+#include "command_receiver.h"
 
 class ServerErrorHandler : public Poco::ErrorHandler
 {
@@ -38,6 +39,7 @@ private:
 
   bool _help_requested{false};
   std::string _name_of_app{};
+  std::string _job_mode;
 
 public:
   static std::atomic_bool do_shutdown;
@@ -109,6 +111,7 @@ public:
                           .repeatable(true)
                           .argument("file")
                           .callback(Poco::Util::OptionCallback<EntryPoint>(this, &EntryPoint::handleConfig)));
+    options.addOption(Poco::Util::Option("mode", "m", "select the mode for job").required(true).argument("string"));
   }
 
   void handleConfig(const std::string& name, const std::string& value) { loadConfiguration(value); }
@@ -125,6 +128,9 @@ public:
     // } else if (name == "timeout") {
     //   _open_or_listen_timeout_in_sec = std::stoi(value);
     // }
+
+    if (name == "mode")
+      _job_mode = value;
     Application::handleOption(name, value);
   }
 
@@ -173,24 +179,47 @@ public:
     }
     RAY_LOG(INFO) << "main Started: " << _name_of_app;
     // printProperties("");
-    {
-      std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
-      std::unique_ptr<EndPointManager> epm =
-          std::make_unique<EndPointManager>(jlm.get(), config().getString("system.currentDir"), 8080);
-      std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
-      epm->start();
-      Job job("1");
-      jlm->add_job(job);
-      jlm->start();
-      plm->start();
-      RAY_LOG_INF << "Server started";
-      waitForTerminationRequest();
-      RAY_LOG_INF << "Server stop request received";
-      epm->stop();
-      jlm->stop();
-      plm->stop();
+    if (_job_mode == "server") {
+      {
+        std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
+        std::unique_ptr<EndPointManager> epm =
+            std::make_unique<EndPointManager>(jlm.get(), config().getString("system.currentDir"), 8080);
+        std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+        epm->start();
+        Job job("SERVER", "1");
+        jlm->add_job(job);
+        jlm->start();
+        plm->start();
+        RAY_LOG_INF << "Server started";
+        waitForTerminationRequest();
+        RAY_LOG_INF << "Server stop request received";
+        epm->stop();
+        jlm->stop();
+        plm->stop();
+      }
+      RAY_LOG_INF << "Server stopped";
+    } else if (_job_mode == "client") {
+      {
+        std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
+        std::unique_ptr<CommandReceiver> cmdr =
+            std::make_unique<CommandReceiver>();
+        std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+        cmdr->start();
+        Job job("CLIENT", "1");
+        jlm->add_job(job);
+        jlm->start();
+        plm->start();
+        RAY_LOG_INF << "Client started";
+        waitForTerminationRequest();
+        RAY_LOG_INF << "Client stop request received";
+        cmdr->stop();
+        jlm->stop();
+        plm->stop();
+      }
+      RAY_LOG_INF << "Client stopped";
+    } else {
+      throw std::invalid_argument("invalid job_mode");
     }
-    RAY_LOG_INF << "Server stopped";
 
     return Application::EXIT_OK;
   }

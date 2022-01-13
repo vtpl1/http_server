@@ -56,7 +56,7 @@ TEST_CASE("spawned command should return true", "[pipeline]")
 
 TEST_CASE("jobs are equal", "[jobs]")
 {
-  Job job1("1");
-  Job job2("1");
+  Job job1("SERVER", "1");
+  Job job2("SERVER", "1");
   REQUIRE(job1 == job2);
 }
