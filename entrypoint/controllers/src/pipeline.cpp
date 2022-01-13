@@ -7,10 +7,14 @@
 
 #include "logging.h"
 #include "pipeline.h"
-Pipeline::Pipeline(std::string command) : Pipeline(std::move(command), std::vector<std::string>(), Poco::Path::current()) {}
+Pipeline::Pipeline(std::string command)
+    : Pipeline(std::move(command), std::vector<std::string>(), Poco::Path::current())
+{
+}
 Pipeline::Pipeline(std::string command, Poco::Process::Args args, std::string initial_directory)
     : _command(std::move(command)), _args(std::move(args)), _initial_directory(std::move(initial_directory))
 {
+  start();
 }
 Pipeline::~Pipeline() { stop(); }
 void Pipeline::start()
@@ -75,7 +79,8 @@ void Pipeline::run()
     {
       std::lock_guard<std::mutex> lock_thread_running(_thread_running_mutex);
       try {
-        _process_handle = std::make_unique<Poco::ProcessHandle>(Poco::Process::launch(_command, _args, _initial_directory));
+        _process_handle =
+            std::make_unique<Poco::ProcessHandle>(Poco::Process::launch(_command, _args, _initial_directory));
       } catch (Poco::Exception& e) {
         RAY_LOG_ERR << "MONOTOSH:: Poco::Exception " << e.what();
       } catch (const std::exception& e) {

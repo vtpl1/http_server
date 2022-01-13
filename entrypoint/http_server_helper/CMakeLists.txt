@@ -11,6 +11,8 @@ add_library(http_server_helper
     src/method_not_supported_request_handler.cpp
     src/not_found_request_handler.cpp
     src/file_request_handler.cpp
+    src/poco_net_stoppable_http_request_handler.cpp
+    src/server_stopped_event.cpp
 
     inc/http_server.h
     inc/generic_http_request_handler_factory.h
@@ -18,6 +20,8 @@ add_library(http_server_helper
     inc/method_not_supported_request_handler.h
     inc/not_found_request_handler.h
     inc/file_request_handler.h
+    inc/poco_net_stoppable_http_request_handler.h
+    inc/server_stopped_event.h
 )
 
 target_include_directories(http_server_helper

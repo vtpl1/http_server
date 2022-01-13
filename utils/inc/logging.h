@@ -60,6 +60,7 @@ enum class RayLogLevel {
 #define RAY_LOG_TRC RAY_LOG(TRACE)
 #define RAY_LOG_DBG RAY_LOG(DEBUG)
 #define RAY_LOG_INF RAY_LOG(INFO)
+#define RAY_LOG_WAR RAY_LOG(WARNING)
 #define RAY_LOG_ERR RAY_LOG(ERROR)
 #define RAY_LOG_FAT RAY_LOG(FATAL)
 

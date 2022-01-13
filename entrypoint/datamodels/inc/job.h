@@ -13,7 +13,7 @@ enum class JobState { IDLE, RUNNING, END };
 class Job
 {
 public:
-  Job(std::string channel_id);
+  Job(std::string job_mode, std::string channel_id);
   ~Job() = default;
   int16_t id{0};
   JobState job_state{JobState::IDLE};

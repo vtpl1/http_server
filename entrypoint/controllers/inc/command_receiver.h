@@ -5,12 +5,26 @@
 #pragma once
 #ifndef command_receiver_h
 #define command_receiver_h
+
+#include <atomic>
+#include <memory>
+#include <thread>
+
 class CommandReceiver
 {
 private:
-    /* data */
+  std::atomic_bool _do_shutdown{false};
+  std::atomic_bool _is_internal_shutdown{false};
+  bool _is_already_shutting_down{false};
+  inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
+  std::unique_ptr<std::thread> _thread;
+
 public:
-    CommandReceiver(/* args */);
-    ~CommandReceiver();
+  CommandReceiver(/* args */);
+  ~CommandReceiver();
+  void start();
+  void signal_to_stop();
+  void stop();
+  void run();
 };
-#endif	// command_receiver_h
+#endif // command_receiver_h

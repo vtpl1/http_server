@@ -15,7 +15,8 @@ private:
 public:
   NotFoundRequestHandler() = default;
   ~NotFoundRequestHandler() = default;
-  void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+  static void staticHandleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+  void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response) override;
 };
 
 #endif // not_found_request_handler_h

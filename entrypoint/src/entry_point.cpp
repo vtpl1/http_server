@@ -16,12 +16,12 @@
 #include <thread>
 #include <vector>
 
+#include "command_receiver.h"
 #include "end_point_manager.h"
 #include "job_list_manager.h"
 #include "logging.h"
 #include "pipeline.h"
 #include "pipeline_manager.h"
-#include "command_receiver.h"
 
 class ServerErrorHandler : public Poco::ErrorHandler
 {
@@ -186,23 +186,20 @@ public:
             std::make_unique<EndPointManager>(jlm.get(), config().getString("system.currentDir"), 8080);
         std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
         epm->start();
-        Job job("SERVER", "1");
-        jlm->add_job(job);
         jlm->start();
         plm->start();
         RAY_LOG_INF << "Server started";
         waitForTerminationRequest();
         RAY_LOG_INF << "Server stop request received";
-        epm->stop();
-        jlm->stop();
         plm->stop();
+        jlm->stop();
+        epm->stop();
       }
       RAY_LOG_INF << "Server stopped";
     } else if (_job_mode == "client") {
       {
         std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
-        std::unique_ptr<CommandReceiver> cmdr =
-            std::make_unique<CommandReceiver>();
+        std::unique_ptr<CommandReceiver> cmdr = std::make_unique<CommandReceiver>();
         std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
         cmdr->start();
         Job job("CLIENT", "1");

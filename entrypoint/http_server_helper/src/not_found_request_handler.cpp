@@ -3,15 +3,22 @@
 // *****************************************************
 #include <sstream>
 
+#include "logging.h"
 #include "not_found_request_handler.h"
 
-void NotFoundRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
-                                           Poco::Net::HTTPServerResponse& response)
+void NotFoundRequestHandler::staticHandleRequest(Poco::Net::HTTPServerRequest& request,
+                                                 Poco::Net::HTTPServerResponse& response)
 {
+  RAY_LOG_INF << "Not found : " << request.getURI();
   response.setContentType("text/plain");
   response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
   const std::string str = Poco::Net::HTTPResponse::HTTP_REASON_NOT_FOUND;
   response.setReason(str);
   response.setContentLength(str.length());
   response.send() << str;
+}
+void NotFoundRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
+                                           Poco::Net::HTTPServerResponse& response)
+{
+  staticHandleRequest(request, response);
 }

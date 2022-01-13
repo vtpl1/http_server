@@ -11,6 +11,7 @@
 
 #include "job.h"
 #include "job_list_manager.h"
+#include "pipeline.h"
 class PipelineManager
 {
 private:
@@ -21,6 +22,7 @@ private:
 
   std::unique_ptr<std::thread> _thread;
   JobListManager* _jlm;
+  std::vector<std::unique_ptr<Pipeline>> rtmp_to_hls_list;
 
 public:
   PipelineManager(JobListManager* jlm);
