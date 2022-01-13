@@ -46,6 +46,7 @@ void FileRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
       is_file_found = true;
     }
   } catch (const Poco::FileNotFoundException& e) {
+  } catch (const Poco::PathNotFoundException& e) {
   }
 
   if (!is_file_found) {
