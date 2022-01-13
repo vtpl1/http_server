@@ -36,7 +36,16 @@ void EndPointManager::stop()
     }
   }
 }
-void EndPointManager::on_request_event(std::string req_url) { RAY_LOG_INF << req_url; }
+void EndPointManager::on_request_event(const std::string req_url)
+{
+  std::regex rgx(".*videos\\/(\\d+)\\/play\\.m3u8.*");
+  std::smatch match;
+  const std::string s(req_url);
+  if (std::regex_search(s.begin(), s.end(), match, rgx)) {
+    RAY_LOG_INF << "Request received from : " << match[1];
+    std::cout << "match: " << match[1] << '\n';
+  }
+}
 void EndPointManager::run()
 {
   _svr = std::make_unique<HttpServer>(_server_port);

@@ -82,7 +82,7 @@ void HttpServer::set_delay_for_mount_point(const std::string& pattern, const int
 {
   _pattern_to_delay_map[pattern] = delay_in_sec;
 }
-void HttpServer::set_callback_handler(const std::string& pattern, std::function<void(std::string)> handler)
+void HttpServer::set_callback_handler(const std::string& pattern, std::function<void(const std::string)> handler)
 {
   _pattern_to_callback_map[pattern] = handler;
 }

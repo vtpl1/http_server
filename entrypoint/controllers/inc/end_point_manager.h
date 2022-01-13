@@ -35,6 +35,6 @@ public:
   void signal_to_stop();
   void stop();
   void run();
-  void on_request_event(std::string req_url);
+  void on_request_event(const std::string req_url);
 };
 #endif // end_point_manager_h

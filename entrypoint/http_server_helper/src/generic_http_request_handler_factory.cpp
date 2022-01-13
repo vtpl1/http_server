@@ -17,7 +17,7 @@
 GenericHttpRequestHandlerFactory::GenericHttpRequestHandlerFactory(
     std::map<std::string, std::string> base_dirs, std::map<std::string, std::string> file_extension_and_mimetype_map,
     std::map<std::string, int> pattern_to_delay_map,
-    std::map<std::string, std::function<void(std::string)>> pattern_to_callback_map)
+    std::map<std::string, std::function<void(const std::string)>> pattern_to_callback_map)
     : _base_dirs(std::move(base_dirs)), _file_extension_and_mimetype_map(std::move(file_extension_and_mimetype_map)),
       _pattern_to_delay_map(std::move(pattern_to_delay_map)),
       _pattern_to_callback_map(std::move(pattern_to_callback_map)), _server_stopped_event(new ServerStoppedEvent())
