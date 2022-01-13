@@ -14,7 +14,7 @@ FileRequestHandler::FileRequestHandler(std::string base_path, std::string conten
                                        ServerStoppedEvent::Ptr server_stopped_event,
                                        int monitor_in_sec_for_availability)
     : _base_path(std::move(base_path)), _content_type(std::move(content_type)),
-      PocoNetStoppableHTTPRequestHandler(server_stopped_event),
+      PocoNetStoppableHTTPRequestHandler(std::move(server_stopped_event)),
       _monitor_in_sec_for_availability(monitor_in_sec_for_availability)
 {
 }

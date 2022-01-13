@@ -1,6 +1,7 @@
 // *****************************************************
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
+#include <algorithm>
 
 #include "job_list_manager.h"
 
@@ -28,7 +29,7 @@ void JobListManager::run()
   //   std::this_thread::sleep_for(std::chrono::seconds(1));
   // }
 }
-void JobListManager::add_job(Job job)
+void JobListManager::add_job(const Job& job)
 {
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   if (std::find(_jobs.begin(), _jobs.end(), job) == _jobs.end()) {
@@ -45,7 +46,7 @@ std::vector<Job> JobListManager::get_jobs()
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   return _jobs;
 }
-void JobListManager::add_running_job(Job job)
+void JobListManager::add_running_job(const Job& job)
 {
   std::lock_guard<std::mutex> lock(_running_jobs_mutex);
   if (std::find(_running_jobs.begin(), _running_jobs.end(), job) == _running_jobs.end()) {

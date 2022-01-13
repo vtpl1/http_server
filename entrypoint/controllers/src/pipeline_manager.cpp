@@ -29,10 +29,10 @@ void PipelineManager::run()
       std::string command = "./build/entrypoint/Debug/media_converter.exe";
       std::vector<std::string> args;
 
-      args.push_back("-i");
-      args.push_back(job.input);
-      args.push_back("-o");
-      args.push_back(job.output);
+      args.emplace_back("-i");
+      args.emplace_back(job.input);
+      args.emplace_back("-o");
+      args.emplace_back(job.output);
       std::cout << ":::::::::::::::::::::::::::::::::::::::::::::" << job.input << " , " << job.output << std::endl;
       std::unique_ptr<Pipeline> rtmp_to_hls = std::make_unique<Pipeline>(command, args, "");
       rtmp_to_hls_list.push_back(std::move(rtmp_to_hls));

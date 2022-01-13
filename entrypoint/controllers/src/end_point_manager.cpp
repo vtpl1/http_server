@@ -36,12 +36,12 @@ void EndPointManager::stop()
     }
   }
 }
-void EndPointManager::on_request_event(const std::string req_url)
+void EndPointManager::on_request_event(const std::string& req_url)
 {
-  std::regex rgx(".*videos\\/(\\d+)\\/play\\.m3u8.*");
+  // std::regex rgx(".*videos\\/(\\d+)\\/play\\.m3u8.*");
+  std::regex rgx(R"(.*videos\/(\d+)\/play\.m3u8.*)");
   std::smatch match;
-  const std::string s(req_url);
-  if (std::regex_search(s.begin(), s.end(), match, rgx)) {
+  if (std::regex_search(req_url.begin(), req_url.end(), match, rgx)) {
     RAY_LOG_INF << "Request received from : " << match[1];
     std::cout << "match: " << match[1] << '\n';
     _jlm->add_job(Job("SERVER", match[1]));
@@ -81,7 +81,7 @@ void EndPointManager::run()
     }
   }
   //_svr->set_delay_for_mount_point(".m3u8", 30);
-  _svr->set_callback_handler(".m3u8", [this](std::string req_uri) { on_request_event(req_uri); });
+  _svr->set_callback_handler(".m3u8", [this](const std::string& req_uri) { on_request_event(req_uri); });
 
   //_svr->listen("0.0.0.0", 8080);
   _svr->start();

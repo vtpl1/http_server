@@ -4,7 +4,7 @@
 
 #include "job.h"
 
-Job::Job(std::string job_mode, std::string channel_id) : channel_id(channel_id)
+Job::Job(const std::string& job_mode, const std::string& channel_id) : channel_id(channel_id)
 {
   id = std::stoi(channel_id);
   if (job_mode == "SERVER") {
@@ -15,9 +15,4 @@ Job::Job(std::string job_mode, std::string channel_id) : channel_id(channel_id)
     output = "rtmp://localhost:900" + channel_id;
   }
 }
-bool Job::compare(const Job& other) const
-{
-  if (input == other.input && output == other.output)
-    return true;
-  return false;
-}
+bool Job::compare(const Job& other) const { return (input == other.input && output == other.output); }

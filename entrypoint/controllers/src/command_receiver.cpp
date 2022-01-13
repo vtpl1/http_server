@@ -4,8 +4,6 @@
 
 #include "command_receiver.h"
 
-CommandReceiver::CommandReceiver(/* args */) {}
-
 CommandReceiver::~CommandReceiver() { stop(); }
 
 void CommandReceiver::start() { _thread = std::make_unique<std::thread>(&CommandReceiver::run, this); }

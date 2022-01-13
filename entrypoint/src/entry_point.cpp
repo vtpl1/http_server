@@ -23,6 +23,7 @@
 #include "pipeline.h"
 #include "pipeline_manager.h"
 
+constexpr int http_server_default_port = 8080;
 class ServerErrorHandler : public Poco::ErrorHandler
 {
 public:
@@ -39,7 +40,6 @@ private:
 
   bool _help_requested{false};
   std::string _name_of_app{};
-  std::string _job_mode;
 
 public:
   static std::atomic_bool do_shutdown;
@@ -101,7 +101,7 @@ public:
 
   void defineOptions(Poco::Util::OptionSet& options) override
   {
-    Application::defineOptions(options);
+    Poco::Util::ServerApplication::defineOptions(options);
     options.addOption(Poco::Util::Option("help", "h", "display help information on command line arguments")
                           .required(false)
                           .repeatable(false)
@@ -111,7 +111,16 @@ public:
                           .repeatable(true)
                           .argument("file")
                           .callback(Poco::Util::OptionCallback<EntryPoint>(this, &EntryPoint::handleConfig)));
-    options.addOption(Poco::Util::Option("mode", "m", "select the mode for job").required(true).argument("string"));
+    options.addOption(Poco::Util::Option("mode", "m", "select the mode for job")
+                          .required(false)
+                          .repeatable(false)
+                          .argument("value")
+                          .binding("mode"));
+    options.addOption(Poco::Util::Option("port", "p", "Supply server port")
+                          .required(false)
+                          .repeatable(false)
+                          .argument("value")
+                          .binding("server_port"));
   }
 
   void handleConfig(const std::string& name, const std::string& value) { loadConfiguration(value); }
@@ -128,9 +137,6 @@ public:
     // } else if (name == "timeout") {
     //   _open_or_listen_timeout_in_sec = std::stoi(value);
     // }
-
-    if (name == "mode")
-      _job_mode = value;
     Application::handleOption(name, value);
   }
 
@@ -167,7 +173,7 @@ public:
     }
   }
 
-  int main(const ArgVec& args)
+  int main(const ArgVec& args) final
   {
     if (_help_requested) {
       return Application::EXIT_OK;
@@ -179,11 +185,13 @@ public:
     }
     RAY_LOG(INFO) << "main Started: " << _name_of_app;
     // printProperties("");
-    if (_job_mode == "server") {
+    std::string job_mode = config().getString("mode", "server");
+    if (job_mode == "server") {
       {
+        int server_port = config().getInt("server_port", http_server_default_port);
         std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
         std::unique_ptr<EndPointManager> epm =
-            std::make_unique<EndPointManager>(jlm.get(), config().getString("system.currentDir"), 8080);
+            std::make_unique<EndPointManager>(jlm.get(), config().getString("system.currentDir"), server_port);
         std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
         epm->start();
         jlm->start();
@@ -196,7 +204,7 @@ public:
         epm->stop();
       }
       RAY_LOG_INF << "Server stopped";
-    } else if (_job_mode == "client") {
+    } else if (job_mode == "client") {
       {
         std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
         std::unique_ptr<CommandReceiver> cmdr = std::make_unique<CommandReceiver>();
@@ -215,7 +223,7 @@ public:
       }
       RAY_LOG_INF << "Client stopped";
     } else {
-      throw std::invalid_argument("invalid job_mode");
+      RAY_LOG_ERR << "invalid job_mode";
     }
 
     return Application::EXIT_OK;
@@ -251,19 +259,19 @@ public:
 
       command.clear();
       command.append("./build/entrypoint/Debug/media_converter.exe");
-      args.push_back("-i");
-      args.push_back("rtmp://0.0.0.0:9001");
-      args.push_back("-o");
-      args.push_back("./videos/play.m3u8");
+      args.emplace_back("-i");
+      args.emplace_back("rtmp://0.0.0.0:9001");
+      args.emplace_back("-o");
+      args.emplace_back("./videos/play.m3u8");
       std::unique_ptr<Pipeline> rtmp_to_hls = std::make_unique<Pipeline>(command, args, "");
 
       command.clear();
       args.clear();
       command.append("./build/entrypoint/Debug/media_converter.exe");
-      args.push_back("-i");
-      args.push_back("rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/");
-      args.push_back("-o");
-      args.push_back("rtmp://localhost:9001");
+      args.emplace_back("-i");
+      args.emplace_back("rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/");
+      args.emplace_back("-o");
+      args.emplace_back("rtmp://localhost:9001");
       std::unique_ptr<Pipeline> rtsp_to_rtmp = std::make_unique<Pipeline>(command, args, "");
 
       http_server->start();

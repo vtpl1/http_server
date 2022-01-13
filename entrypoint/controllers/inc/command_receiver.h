@@ -20,7 +20,7 @@ private:
   std::unique_ptr<std::thread> _thread;
 
 public:
-  CommandReceiver(/* args */);
+  CommandReceiver() = default;
   ~CommandReceiver();
   void start();
   void signal_to_stop();
