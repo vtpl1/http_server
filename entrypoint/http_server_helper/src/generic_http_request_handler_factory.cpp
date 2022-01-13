@@ -13,6 +13,8 @@
 #include "method_not_supported_request_handler.h"
 #include "not_found_request_handler.h"
 #include "options_request_handler.h"
+#include "web_socket_page_request_handler.h"
+#include "web_socket_request_handler.h"
 
 GenericHttpRequestHandlerFactory::GenericHttpRequestHandlerFactory(
     std::map<std::string, std::string> base_dirs, std::map<std::string, std::string> file_extension_and_mimetype_map,
@@ -27,10 +29,24 @@ GenericHttpRequestHandlerFactory::GenericHttpRequestHandlerFactory(
 Poco::Net::HTTPRequestHandler*
 GenericHttpRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
 {
+  RAY_LOG_INF << "Request from " + request.clientAddress().toString() + ": " + request.getMethod() + " " +
+                     request.getURI() + " " + request.getVersion();
+
+  for (const auto& it : request) {
+    RAY_LOG_INF << it.first + ": " + it.second;
+  }
+  if (request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0) {
+    return new WebSocketRequestHandler();
+  }
   if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS) {
     return new OptionsRequestHandler();
   }
   if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET) {
+    auto const req_uri = std::string(request.getURI());
+    const std::string ws_path = "/ws";
+    if (req_uri.compare(0, ws_path.size(), ws_path) == 0) {
+      return new WebSocketPageRequestHandler();
+    }
     Poco::Net::HTTPRequestHandler* ret = handle_file_request(request);
     return ret;
   }
