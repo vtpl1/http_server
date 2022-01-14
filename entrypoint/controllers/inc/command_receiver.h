@@ -21,9 +21,11 @@ private:
   std::unique_ptr<std::thread> _thread;
 
   JobListManager& _jlm;
+  std::string _host{};
+  int _port{};
 
 public:
-  CommandReceiver(JobListManager& jlm);
+  CommandReceiver(std::string host, int port, JobListManager& jlm);
   ~CommandReceiver();
   void start();
   void signal_to_stop();

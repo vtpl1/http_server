@@ -2,7 +2,10 @@
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
 
+#include <algorithm>
+
 #include "pipeline_manager.h"
+
 PipelineManager::PipelineManager(JobListManager& jlm) : _jlm(jlm) {}
 
 PipelineManager::~PipelineManager() { stop(); }
@@ -33,11 +36,17 @@ void PipelineManager::run()
       args.emplace_back(job.input);
       args.emplace_back("-o");
       args.emplace_back(job.output);
-      std::cout << ":::::::::::::::::::::::::::::::::::::::::::::" << job.input << " , " << job.output << std::endl;
-      std::unique_ptr<Pipeline> rtmp_to_hls = std::make_unique<Pipeline>(command, args, "");
-      rtmp_to_hls_list.push_back(std::move(rtmp_to_hls));
+      PipelineAndJob rtmp_to_hls(std::make_unique<Pipeline>(command, args, ""), job);
+      rtmp_to_hls_list.emplace_back(rtmp_to_hls);
       _jlm.add_running_job(job);
     }
+    // for (auto&& job : _jlm.get_extra_running_jobs()) {
+    //   auto it = std::find(rtmp_to_hls_list.begin(), rtmp_to_hls_list.end(), job);
+    //   if (it != rtmp_to_hls_list.end()) {
+    //     rtmp_to_hls_list.erase(it);
+    //     _jlm.delete_running_job(job);
+    //   }
+    // }
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }

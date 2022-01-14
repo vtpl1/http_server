@@ -12,6 +12,17 @@
 #include "job.h"
 #include "job_list_manager.h"
 #include "pipeline.h"
+
+class PipelineAndJob
+{
+public:
+  PipelineAndJob(std::unique_ptr<Pipeline> p, const Job& j) : pipeline(std::move(p)), job(j) {}
+  PipelineAndJob(const PipelineAndJob& other) : pipeline(std::move(other.pipeline)), job(other.job) {}
+  ~PipelineAndJob() = default;
+  std::unique_ptr<Pipeline> pipeline;
+  Job job;
+};
+
 class PipelineManager
 {
 private:
@@ -22,7 +33,7 @@ private:
 
   std::unique_ptr<std::thread> _thread;
   JobListManager& _jlm;
-  std::vector<std::unique_ptr<Pipeline>> rtmp_to_hls_list;
+  std::vector<PipelineAndJob> rtmp_to_hls_list;
 
 public:
   PipelineManager(JobListManager& jlm);

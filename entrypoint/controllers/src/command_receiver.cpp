@@ -18,7 +18,7 @@ constexpr int MAX_BUFFER_SIZE = 1024;
 constexpr int RECEIVE_TIMEOUT_MILLISEC = 500;
 constexpr int PING_SEND_INTERVAL_SEC = 10;
 
-CommandReceiver::CommandReceiver(JobListManager& jlm) : _jlm(jlm) {}
+CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm) : _host(host), _port(port), _jlm(jlm) {}
 
 CommandReceiver::~CommandReceiver() { stop(); }
 
