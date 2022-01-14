@@ -15,7 +15,8 @@
 #include "logging.h"
 
 constexpr int MAX_BUFFER_SIZE = 1024;
-constexpr int TIMEOUT_SEC = 5;
+constexpr int RECEIVE_TIMEOUT_MILLISEC = 500;
+constexpr int PING_SEND_INTERVAL_SEC = 10;
 
 CommandReceiver::CommandReceiver() {}
 
@@ -40,55 +41,63 @@ void CommandReceiver::stop()
 
 void CommandReceiver::run()
 {
+  auto last_op_time = std::chrono::high_resolution_clock::now();
   while (!_do_shutdown_composite()) {
-    std::unique_ptr<Poco::Net::WebSocket> ws;
     try {
       Poco::Net::HTTPClientSession cs("localhost", 8080);
       Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, "/ws", Poco::Net::HTTPMessage::HTTP_1_1);
       Poco::Net::HTTPResponse response;
-      ws = std::make_unique<Poco::Net::WebSocket>(cs, request, response);
-      ws->setReceiveTimeout(Poco::Timespan(TIMEOUT_SEC, 0)); // Timespan(long seconds, long microseconds)
-      ws->setBlocking(true);
-      ws->setKeepAlive(true);
+      Poco::Net::WebSocket ws(cs, request, response);
+      ws.setReceiveTimeout(
+          Poco::Timespan(0, RECEIVE_TIMEOUT_MILLISEC * 1000)); // Timespan(long seconds, long microseconds)
 
-    } catch (Poco::Net::WebSocketException& e) {
-      RAY_LOG_INF << "Exception " << e.what();
-    }
-    if (ws == nullptr) {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-      continue;
-    }
-    std::array<char, MAX_BUFFER_SIZE> buffer{};
-    int flags = 0;
-    while (!_do_shutdown_composite()) {
-      bool is_Send_ping = false;
-      try {
-        int rlen = ws->receiveFrame(buffer.data(), sizeof(buffer), flags);
-        if (rlen >= 0) {
-          buffer[rlen] = '\0';
+      RAY_LOG_INF << "WebSocket connection established.";
+      std::array<char, MAX_BUFFER_SIZE> buffer{};
+      int flags = 0;
+      int n = 0;
+      while (!_do_shutdown_composite()) {
+        bool is_timeout = false;
+        flags = 0;
+        n = 0;
+        try {
+          n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
+          RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
+        } catch (Poco::TimeoutException& e) {
+          is_timeout = true;
+        } catch (Poco::Net::NetException& e) {
+          RAY_LOG_INF << e.what();
+          break;
         }
-        RAY_LOG_INF << rlen << " bytes received : ";
-        RAY_LOG_INF << (((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING)
-                            ? "PING"
-                            : "NO PING");
-        RAY_LOG_INF << (((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PONG)
-                            ? "PONG"
-                            : "NO PONG");
-      } catch (Poco::TimeoutException& e) {
-        is_Send_ping = true;
+        if (is_timeout) {
+          if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - last_op_time)
+                  .count() >= PING_SEND_INTERVAL_SEC) {
+            try {
+              ws.sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PING);
+              last_op_time = std::chrono::high_resolution_clock::now();
+              RAY_LOG_INF << "PING sent";
+            } catch (Poco::Net::NetException& e) {
+              RAY_LOG_ERR << e.what();
+              break;
+            }
+          }
+        }
+        if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE) {
+          break;
+        }
+      }
+      try {
+        ws.close();
       } catch (Poco::Net::NetException& e) {
         RAY_LOG_INF << "Exception " << e.what();
-        break;
       }
-      if (is_Send_ping) {
-        int slen = ws->sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PING);
-        RAY_LOG_INF << slen << " bytes sent ping";
-      }
-    }
-    try {
-      ws->close();
-    } catch (Poco::Exception& e) {
-      RAY_LOG_INF << "Exception " << e.what();
+      RAY_LOG_INF << "WebSocket connection closed.";
+
+    } catch (Poco::Net::WebSocketException& exc) {
+      RAY_LOG_ERR << exc.what();
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    } catch (Poco::Net::NetException& e) {
+      RAY_LOG_ERR << e.what();
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   }
 }

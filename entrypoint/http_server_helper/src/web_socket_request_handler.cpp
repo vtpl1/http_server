@@ -5,12 +5,15 @@
 #include <Poco/Net/NetException.h>
 #include <Poco/Net/WebSocket.h>
 #include <array>
+#include <thread>
 
 #include "logging.h"
 #include "web_socket_request_handler.h"
 
 constexpr int MAX_BUFFER_SIZE = 1024;
-constexpr int TIMEOUT_SEC = 5;
+constexpr int RECEIVE_TIMEOUT_MILLISEC = 500;
+constexpr int PONG_MINIMUM_INTERVAL_SEC = 8;
+
 WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_stopped_event)
     : PocoNetStoppableHTTPRequestHandler(std::move(server_stopped_event))
 {
@@ -19,43 +22,53 @@ WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_
 void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
                                             Poco::Net::HTTPServerResponse& response)
 {
+  auto last_op_time = std::chrono::high_resolution_clock::now();
   try {
     Poco::Net::WebSocket ws(request, response);
-    ws.setReceiveTimeout(Poco::Timespan(TIMEOUT_SEC, 0)); // Timespan(long seconds, long microseconds)
-    ws.setBlocking(true);
-    ws.setKeepAlive(true);
+    ws.setReceiveTimeout(
+        Poco::Timespan(0, RECEIVE_TIMEOUT_MILLISEC * 1000)); // Timespan(long seconds, long microseconds)
 
     RAY_LOG_INF << "WebSocket connection established.";
     std::array<char, MAX_BUFFER_SIZE> buffer{};
     int flags = 0;
     int n = 0;
-    do {
+    while (!stopped) {
+      flags = 0;
+      n = 0;
       try {
         n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
         RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
         // ws.sendFrame(buffer.data(), n, flags);
-        std::cout << (((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING)
-            ? "PING"
-            : "NO PING");
-        std::cout << (((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PONG)
-            ? "PONG"
-            : "NO PONG");
-        if (n == 0) {
-          if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE) {
+      } catch (Poco::TimeoutException& e) {
+        // RAY_LOG_ERR << e.what();
+      } catch (Poco::Net::NetException& e) {
+        RAY_LOG_ERR << e.what();
+        break;
+      }
+      if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING) {
+        if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - last_op_time)
+                .count() >= PONG_MINIMUM_INTERVAL_SEC) {
+          try {
+            ws.sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PONG);
+            last_op_time = std::chrono::high_resolution_clock::now();
+            RAY_LOG_INF << "PONG sent";
+          } catch (Poco::Net::NetException& e) {
+            RAY_LOG_ERR << e.what();
             break;
           }
-          if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING) {
-            ws.sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PONG);
-          }
         }
-      } catch (Poco::TimeoutException& e) {
-        std::cerr << e.what() << '\n';
       }
-
-      // while (n > 0 && (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) != Poco::Net::WebSocket::FRAME_OP_CLOSE);
-    } while (!stopped); // while (n > 0 && (flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) !=
-                        // Poco::Net::WebSocket::FRAME_OP_CLOSE);
+      if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE) {
+        break;
+      }
+    }
+    try {
+      ws.close();
+    } catch (Poco::Exception& e) {
+      RAY_LOG_INF << "Exception " << e.what();
+    }
     RAY_LOG_INF << "WebSocket connection closed.";
+
   } catch (Poco::Net::WebSocketException& exc) {
     RAY_LOG_ERR << exc.what();
     switch (exc.code()) {
@@ -70,5 +83,7 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
       response.send();
       break;
     }
+  } catch (Poco::Net::NetException& e) {
+    RAY_LOG_ERR << e.what();
   }
 }
