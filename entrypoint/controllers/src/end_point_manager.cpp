@@ -9,7 +9,7 @@
 #include "logging.h"
 // https://streaming.videonetics.com/live/hls/33E2C658-8F16-408A-8523-AAD5F41CB67A_HLS_SERVER_MI/play.m3u8
 //  /live/hls/{stream_id}/play.m3u8
-EndPointManager::EndPointManager(JobListManager* jlm, std::string base_dir, int server_port)
+EndPointManager::EndPointManager(JobListManager& jlm, std::string base_dir, int server_port)
     : _jlm(jlm), _base_dir(std::move(base_dir)), _server_port(server_port)
 {
 }
@@ -44,7 +44,7 @@ void EndPointManager::on_request_event(const std::string& req_url)
   if (std::regex_search(req_url.begin(), req_url.end(), match, rgx)) {
     RAY_LOG_INF << "Request received from : " << match[1];
     std::cout << "match: " << match[1] << '\n';
-    _jlm->add_job(Job("SERVER", match[1]));
+    _jlm.add_job(Job("SERVER", match[1]));
   }
 }
 void EndPointManager::run()

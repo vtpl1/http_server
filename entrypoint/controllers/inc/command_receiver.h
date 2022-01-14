@@ -10,6 +10,7 @@
 #include <memory>
 #include <thread>
 
+#include "job_list_manager.h"
 class CommandReceiver
 {
 private:
@@ -19,8 +20,10 @@ private:
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
   std::unique_ptr<std::thread> _thread;
 
+  JobListManager& _jlm;
+
 public:
-  CommandReceiver();
+  CommandReceiver(JobListManager& jlm);
   ~CommandReceiver();
   void start();
   void signal_to_stop();

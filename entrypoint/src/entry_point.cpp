@@ -189,34 +189,28 @@ public:
     if (job_mode == "server") {
       {
         int server_port = config().getInt("server_port", http_server_default_port);
-        std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
         std::unique_ptr<EndPointManager> epm =
-            std::make_unique<EndPointManager>(jlm.get(), config().getString("system.currentDir"), server_port);
-        std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+            std::make_unique<EndPointManager>(JobListManager::get_instance(), config().getString("system.currentDir"), server_port);
+        std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(JobListManager::get_instance());
         epm->start();
-        jlm->start();
         plm->start();
         RAY_LOG_INF << "Server started";
         waitForTerminationRequest();
         RAY_LOG_INF << "Server stop request received";
         plm->stop();
-        jlm->stop();
         epm->stop();
       }
       RAY_LOG_INF << "Server stopped";
     } else if (job_mode == "client") {
       {
-        std::unique_ptr<JobListManager> jlm = std::make_unique<JobListManager>();
-        std::unique_ptr<CommandReceiver> cmdr = std::make_unique<CommandReceiver>();
-        std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
+        std::unique_ptr<CommandReceiver> cmdr = std::make_unique<CommandReceiver>(JobListManager::get_instance());
+        std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(JobListManager::get_instance());
         cmdr->start();
-        jlm->start();
         plm->start();
         RAY_LOG_INF << "Client started";
         waitForTerminationRequest();
         RAY_LOG_INF << "Client stop request received";
         plm->stop();
-        jlm->stop();
         cmdr->stop();
       }
       RAY_LOG_INF << "Client stopped";

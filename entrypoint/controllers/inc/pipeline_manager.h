@@ -21,11 +21,11 @@ private:
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
 
   std::unique_ptr<std::thread> _thread;
-  JobListManager* _jlm;
+  JobListManager& _jlm;
   std::vector<std::unique_ptr<Pipeline>> rtmp_to_hls_list;
 
 public:
-  PipelineManager(JobListManager* jlm);
+  PipelineManager(JobListManager& jlm);
   ~PipelineManager();
   void start();
   void signal_to_stop();

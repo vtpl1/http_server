@@ -27,10 +27,13 @@ private:
   std::mutex _running_jobs_mutex;
   std::vector<Job> _jobs;
   std::vector<Job> _running_jobs;
+  JobListManager() = default;
 
 public:
-  JobListManager() = default;
+  JobListManager(const JobListManager&) = delete;
+  JobListManager& operator=(const JobListManager&) = delete;
   ~JobListManager();
+  static JobListManager& get_instance();
   void start();
   void signal_to_stop();
   void stop();
