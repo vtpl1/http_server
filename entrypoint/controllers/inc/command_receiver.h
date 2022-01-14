@@ -6,11 +6,7 @@
 #ifndef command_receiver_h
 #define command_receiver_h
 
-#include <Poco/Net/HTTPClientSession.h>
-#include <Poco/Net/HTTPRequest.h>
-#include <Poco/Net/HTTPResponse.h>
 #include <atomic>
-#include <iostream>
 #include <memory>
 #include <thread>
 
@@ -22,9 +18,6 @@ private:
   bool _is_already_shutting_down{false};
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
   std::unique_ptr<std::thread> _thread;
-  Poco::Net::HTTPClientSession _cs;
-  Poco::Net::HTTPRequest _request;
-  Poco::Net::HTTPResponse _response;
 
 public:
   CommandReceiver();

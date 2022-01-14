@@ -27,9 +27,9 @@ constexpr int http_server_default_port = 8080;
 class ServerErrorHandler : public Poco::ErrorHandler
 {
 public:
-  void exception(const Poco::Exception& exc) override { RAY_LOG(FATAL) << "Poco::Exception " << exc.what(); }
-  void exception(const std::exception& exc) override { RAY_LOG(FATAL) << "std::exception " << exc.what(); }
-  void exception() override { RAY_LOG(FATAL) << "unknown exception "; }
+  void exception(const Poco::Exception& exc) override { RAY_LOG_ERR << "Poco::Exception " << exc.what(); }
+  void exception(const std::exception& exc) override { RAY_LOG_ERR << "std::exception " << exc.what(); }
+  void exception() override { RAY_LOG_ERR << "unknown exception "; }
 };
 
 class EntryPoint : public Poco::Util::ServerApplication
@@ -49,7 +49,7 @@ public:
     loadConfiguration(); // load default configuration files, if present
     Application::initialize(self);
     Poco::Net::initializeNetwork();
-    //Poco::ErrorHandler::set(&_serverErrorHandler);
+    Poco::ErrorHandler::set(&_serverErrorHandler);
     std::string data_dir;
     if (data_dir.empty()) {
       data_dir = get_session_folder();
@@ -180,7 +180,7 @@ public:
     }
     //::ray::RayLog::StartRayLog(name_of_app, ::ray::RayLogLevel::DEBUG, get_session_folder());
     if (signal(SIGINT, EntryPoint::sigHandlerAppClose) == SIG_ERR) {
-      RAY_LOG(FATAL) << "Can't attach sigHandlerAppClose signal\n";
+      RAY_LOG_FAT << "Can't attach sigHandlerAppClose signal\n";
       return ExitCode::EXIT_OSERR;
     }
     RAY_LOG(INFO) << "main Started: " << _name_of_app;

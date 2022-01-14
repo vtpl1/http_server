@@ -36,7 +36,7 @@ GenericHttpRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServ
     RAY_LOG_INF << it.first + ": " + it.second;
   }
   if (request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0) {
-    return new WebSocketRequestHandler();
+    return new WebSocketRequestHandler(_server_stopped_event);
   }
   if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS) {
     return new OptionsRequestHandler();
@@ -117,20 +117,18 @@ GenericHttpRequestHandlerFactory::handle_file_request(const Poco::Net::HTTPServe
           content_type = it->second;
         }
         int delay_val = 0;
-        // for (auto&& kv : _pattern_to_delay_map) {
-        //   auto const regex = std::regex(kv.first);
-        //   if (std::regex_search(req_uri, regex)) {
-        //     delay_val = kv.second;
-        //     // RAY_LOG_INF << "Adding delay in serving: " << req_uri << " sec: " << delay_val;
-        //     delay_val = 0;
-        //     break;
-        //   }
-        // }
+        for (auto&& kv : _pattern_to_delay_map) {
+          auto const regex = std::regex(kv.first);
+          if (std::regex_search(req_uri, regex)) {
+            delay_val = kv.second;
+            // RAY_LOG_INF << "Adding delay in serving: " << req_uri << " sec: " << delay_val;
+            break;
+          }
+        }
         for (auto&& kv : _pattern_to_callback_map) {
           auto const regex = std::regex(kv.first);
           if (std::regex_search(req_uri, regex)) {
             kv.second(req_uri);
-            // RAY_LOG_INF << "Adding delay in serving: " << req_uri << " sec: " << delay_val;
             break;
           }
         }

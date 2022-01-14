@@ -8,10 +8,14 @@
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
-class WebSocketRequestHandler : public Poco::Net::HTTPRequestHandler
+
+#include "poco_net_stoppable_http_request_handler.h"
+#include "server_stopped_event.h"
+
+class WebSocketRequestHandler : public PocoNetStoppableHTTPRequestHandler
 {
 public:
-  WebSocketRequestHandler() = default;
+  WebSocketRequestHandler(ServerStoppedEvent::Ptr server_stopped_event);
   ~WebSocketRequestHandler() = default;
   void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response) override;
 };
