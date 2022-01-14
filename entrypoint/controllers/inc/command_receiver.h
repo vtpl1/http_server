@@ -22,9 +22,9 @@ private:
   bool _is_already_shutting_down{false};
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
   std::unique_ptr<std::thread> _thread;
-  Poco::Net::HTTPClientSession cs;
-  Poco::Net::HTTPRequest request;
-  Poco::Net::HTTPResponse response;
+  Poco::Net::HTTPClientSession _cs;
+  Poco::Net::HTTPRequest _request;
+  Poco::Net::HTTPResponse _response;
 
 public:
   CommandReceiver();

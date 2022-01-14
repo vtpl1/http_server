@@ -6,12 +6,13 @@
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Net/WebSocket.h>
+#include <string>
 
 #include "command_receiver.h"
 
 CommandReceiver::CommandReceiver()
-    : cs("localhost", 8080), request(Poco::Net::HTTPRequest::HTTP_GET, "/ws", Poco::Net::HTTPMessage::HTTP_1_1),
-      response()
+    : _cs("localhost", 8080), _request(Poco::Net::HTTPRequest::HTTP_GET, "/ws", Poco::Net::HTTPMessage::HTTP_1_1),
+      _response()
 {
 }
 
@@ -38,20 +39,25 @@ void CommandReceiver::run()
 {
   while (!_do_shutdown_composite()) {
     try {
-      Poco::Net::WebSocket ws(cs, request, response);
-      char const* testStr = "Hello echo websocket!";
-      char receiveBuff[256];
+      Poco::Net::WebSocket ws(_cs, _request, _response);
+      try {
+        ws.setReceiveTimeout(Poco::Timespan(5, 0)); // Timespan(long seconds, long microseconds)
+        ws.setBlocking(true);
+        ws.setKeepAlive(true);
 
-      int len = ws.sendFrame(testStr, strlen(testStr), Poco::Net::WebSocket::FRAME_TEXT);
-      std::cout << "Sent bytes " << len << std::endl;
-      int flags = 0;
+        char receiveBuff[256];
+        int flags = 0;
 
-      int rlen = ws.receiveFrame(receiveBuff, 256, flags);
-      std::cout << "Received bytes " << rlen << std::endl;
-      std::cout << receiveBuff << std::endl;
-
-      ws.close();
-
+        int rlen = ws.receiveFrame(receiveBuff, 256, flags);
+        std::cout << rlen << " bytes received : " << receiveBuff[rlen] << std::endl;
+      } catch (Poco::TimeoutException& e) {
+        char const *testStr="Hello echo websocket!";
+        int slen = ws.sendFrame(testStr, strlen(testStr), Poco::Net::WebSocket::FRAME_OP_PING);
+        std::cout << slen << " bytes sent" << std::endl;
+      } catch (Poco::Exception& e) {
+        std::cout << "Exception " << e.what();
+        ws.close();
+      }
     } catch (std::exception& e) {
       std::cout << "Exception " << e.what();
     }
