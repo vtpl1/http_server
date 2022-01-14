@@ -35,6 +35,72 @@
             }
         },
         {
+            "name": "entrypointclient",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/entrypoint/Debug/entrypoint.exe",
+            "args": [
+                "--mode",
+                "client"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal",
+            "linux": {
+                "name": "entrypoint",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/entrypoint/entrypoint",
+                "args": [
+                    "--mode",
+                    "client"
+                ],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [],
+                "console": "integratedTerminal",
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+        },
+        {
+            "name": "pocowebsocketclient",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/pocowebsocket/Debug/pocowebsocketclient.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal",
+            "linux": {
+                "name": "pocowebsocketclient",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/pocowebsocket/pocowebsocketclient",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [],
+                "console": "integratedTerminal",
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+        },
+        {
             "name": "tests",
             "type": "cppvsdbg",
             "request": "launch",

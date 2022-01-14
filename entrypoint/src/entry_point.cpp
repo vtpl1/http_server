@@ -49,7 +49,7 @@ public:
     loadConfiguration(); // load default configuration files, if present
     Application::initialize(self);
     Poco::Net::initializeNetwork();
-    Poco::ErrorHandler::set(&_serverErrorHandler);
+    //Poco::ErrorHandler::set(&_serverErrorHandler);
     std::string data_dir;
     if (data_dir.empty()) {
       data_dir = get_session_folder();
@@ -210,16 +210,14 @@ public:
         std::unique_ptr<CommandReceiver> cmdr = std::make_unique<CommandReceiver>();
         std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(jlm.get());
         cmdr->start();
-        Job job("CLIENT", "1");
-        jlm->add_job(job);
         jlm->start();
         plm->start();
         RAY_LOG_INF << "Client started";
         waitForTerminationRequest();
         RAY_LOG_INF << "Client stop request received";
-        cmdr->stop();
-        jlm->stop();
         plm->stop();
+        jlm->stop();
+        cmdr->stop();
       }
       RAY_LOG_INF << "Client stopped";
     } else {
