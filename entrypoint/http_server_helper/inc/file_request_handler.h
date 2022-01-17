@@ -20,7 +20,7 @@ private:
   int _monitor_in_sec_for_availability;
 
 public:
-  FileRequestHandler(std::string base_path, std::string content_type, ServerStoppedEvent::Ptr server_stopped_event,
+  FileRequestHandler(ServerStoppedEvent::Ptr server_stopped_event, std::string base_path, std::string content_type,
                      int monitor_in_sec_for_availability = 0);
   ~FileRequestHandler() = default;
   void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);

@@ -10,13 +10,16 @@
 #include "logging.h"
 #include "web_socket_request_handler.h"
 
-
 constexpr int MAX_BUFFER_SIZE = 1024;
 constexpr int RECEIVE_TIMEOUT_MILLISEC = 500;
 constexpr int PONG_MINIMUM_INTERVAL_SEC = 8;
 
-WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_stopped_event)
-    : PocoNetStoppableHTTPRequestHandler(std::move(server_stopped_event))
+WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_stopped_event,
+                                                 std::vector<StatusCallBackHandler> status_call_back_handler,
+                                                 std::vector<CommandCallBackHandler> command_call_back_handler)
+    : PocoNetStoppableHTTPRequestHandler(std::move(server_stopped_event)),
+      _status_call_back_handler(std::move(status_call_back_handler)),
+      _command_call_back_handler(std::move(command_call_back_handler))
 {
 }
 
@@ -38,6 +41,18 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
       n = 0;
       try {
         n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
+        std::vector<uint8_t> valid_data;
+        for (auto&& handler : _status_call_back_handler) {
+          handler(valid_data);
+        }
+        for (auto&& handler : _command_call_back_handler) {
+          std::vector<uint8_t> command_to_send = handler(request.getURI());
+          if (command_to_send.size()) {
+            ws.sendFrame(command_to_send.data(), command_to_send.size());
+          }
+        }
+
+
         RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
         // ws.sendFrame(buffer.data(), n, flags);
       } catch (Poco::TimeoutException& e) {

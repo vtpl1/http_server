@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "job.pb.h"
+
 enum class JobState { IDLE, RUNNING, END };
 
 class Job

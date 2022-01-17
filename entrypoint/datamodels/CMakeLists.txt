@@ -2,14 +2,35 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
+find_package(protobuf COMPONENTS libprotobuf protoc)
+
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+    interfaces/status.proto
+    interfaces/job.proto
+)
+
+# protobuf_generate(
+#     LANGUAGE cpp
+#     TARGET datamodels
+#     PROTOS interfaces/status.proto
+# )
+
 add_library(datamodels
     src/job.cpp
+    src/status.cpp
     inc/job.h
+    inc/status.h
+    ${PROTO_SRCS}
+    ${PROTO_HDRS}
 )
 
 target_include_directories(datamodels
     PUBLIC inc
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+target_link_libraries(datamodels
+    PUBLIC protobuf::libprotobuf
+)
 set_property(TARGET datamodels PROPERTY
   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

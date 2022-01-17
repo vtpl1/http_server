@@ -36,7 +36,7 @@ void EndPointManager::stop()
     }
   }
 }
-void EndPointManager::on_request_event(const std::string& req_url)
+void EndPointManager::on_url_call_back_event(const std::string& req_url)
 {
   // std::regex rgx(".*videos\\/(\\d+)\\/play\\.m3u8.*");
   std::regex rgx(R"(.*videos\/(\d+)\/play\.m3u8.*)");
@@ -46,6 +46,17 @@ void EndPointManager::on_request_event(const std::string& req_url)
     std::cout << "match: " << match[1] << '\n';
     _jlm.add_job(Job("SERVER", match[1]));
   }
+}
+void EndPointManager::on_status_call_back_event(const std::vector<uint8_t>& data)
+{
+  if (data.size() > 0) {
+    RAY_LOG_INF << "Status received ";
+  }
+}
+std::vector<uint8_t> EndPointManager::on_command_call_back_event(const std::string& req_url)
+{
+  std::vector<uint8_t> jobs;
+  return jobs;
 }
 void EndPointManager::run()
 {
@@ -81,7 +92,10 @@ void EndPointManager::run()
     }
   }
   _svr->set_delay_for_mount_point(".m3u8", 30);
-  _svr->set_callback_handler(".m3u8", [this](const std::string& req_uri) { on_request_event(req_uri); });
+  _svr->set_url_call_back_handler(".m3u8", [this](const std::string& req_uri) { on_url_call_back_event(req_uri); });
+  _svr->set_status_call_back_handler([this](const std::vector<uint8_t>& data) { on_status_call_back_event(data); });
+  _svr->set_command_call_back_handler(
+      [this](const std::string& req_uri) { return on_command_call_back_event(req_uri); });
 
   //_svr->listen("0.0.0.0", 8080);
   _svr->start();

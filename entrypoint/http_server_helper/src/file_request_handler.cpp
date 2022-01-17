@@ -10,12 +10,10 @@
 #include <Poco/StreamCopier.h>
 #include <thread>
 
-FileRequestHandler::FileRequestHandler(std::string base_path, std::string content_type,
-                                       ServerStoppedEvent::Ptr server_stopped_event,
-                                       int monitor_in_sec_for_availability)
-    : _base_path(std::move(base_path)), _content_type(std::move(content_type)),
-      PocoNetStoppableHTTPRequestHandler(std::move(server_stopped_event)),
-      _monitor_in_sec_for_availability(monitor_in_sec_for_availability)
+FileRequestHandler::FileRequestHandler(ServerStoppedEvent::Ptr server_stopped_event, std::string base_path,
+                                       std::string content_type, int monitor_in_sec_for_availability)
+    : PocoNetStoppableHTTPRequestHandler(std::move(server_stopped_event)), _base_path(std::move(base_path)),
+      _content_type(std::move(content_type)), _monitor_in_sec_for_availability(monitor_in_sec_for_availability)
 {
 }
 void FileRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
@@ -30,8 +28,8 @@ void FileRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
         break;
       }
     } catch (const Poco::FileNotFoundException& e) {
-  } catch (const Poco::PathNotFoundException& e) {
-  }
+    } catch (const Poco::PathNotFoundException& e) {
+    }
 
     if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start).count() >=
         _monitor_in_sec_for_availability) {

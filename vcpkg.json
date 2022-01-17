@@ -3,7 +3,13 @@
     "version-string": "0.1",
     "dependencies": [
         "spdlog",
-        "poco",
+        {
+            "name": "poco",
+            "features": [
+                "sqlite3"
+            ]
+        },
+        "protobuf",
         "catch2"
     ]
 }

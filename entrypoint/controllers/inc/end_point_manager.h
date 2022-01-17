@@ -35,6 +35,9 @@ public:
   void signal_to_stop();
   void stop();
   void run();
-  void on_request_event(const std::string& req_url);
+  void on_url_call_back_event(const std::string& req_url);
+  void on_status_call_back_event(const std::vector<uint8_t>& data);
+  std::vector<uint8_t> on_command_call_back_event(const std::string& req_url);
+
 };
 #endif // end_point_manager_h
