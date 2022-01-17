@@ -37,18 +37,15 @@ void PipelineManager::run()
       args.emplace_back("-o");
       args.emplace_back(job.output);
       _pipeline_map.insert(std::make_pair(job, std::make_unique<Pipeline>(command, args, "")));
-      // _pipeline_map[job] = std::make_unique<Pipeline>(command, args, "");
-      //PipelineAndJob rtmp_to_hls(std::make_unique<Pipeline>(command, args, ""), job);
-      ///rtmp_to_hls_list.emplace_back(rtmp_to_hls);
       _jlm.add_running_job(job);
     }
-    // for (auto&& job : _jlm.get_extra_running_jobs()) {
-    //   auto it = std::find(rtmp_to_hls_list.begin(), rtmp_to_hls_list.end(), job);
-    //   if (it != rtmp_to_hls_list.end()) {
-    //     rtmp_to_hls_list.erase(it);
-    //     _jlm.delete_running_job(job);
-    //   }
-    // }
+    for (auto&& job : _jlm.get_extra_running_jobs()) {
+      auto it =_pipeline_map.find(job);
+      if (it != _pipeline_map.end()) {
+        _pipeline_map.erase(it);
+        _jlm.delete_running_job(job);
+      }
+    }
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }

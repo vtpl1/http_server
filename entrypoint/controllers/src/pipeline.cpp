@@ -32,7 +32,7 @@ void Pipeline::signal_to_stop()
   _do_shutdown = true;
   if (_process_handle) {
     if (_process_handle->id() > 0) {
-      std::cout << "signal_to_stop called" << std::endl;
+      RAY_LOG_INF << "signal_to_stop called";
       Poco::Process::requestTermination(_process_handle->id());
     }
   }

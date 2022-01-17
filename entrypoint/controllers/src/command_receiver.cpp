@@ -18,7 +18,9 @@ constexpr int MAX_BUFFER_SIZE = 1024;
 constexpr int RECEIVE_TIMEOUT_MILLISEC = 500;
 constexpr int PING_SEND_INTERVAL_SEC = 10;
 
-CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm) : _host(host), _port(port), _jlm(jlm) {}
+CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm) : _host(host), _port(port), _jlm(jlm)
+{
+}
 
 CommandReceiver::~CommandReceiver() { stop(); }
 
@@ -62,6 +64,15 @@ void CommandReceiver::run()
         try {
           n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
           RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
+          std::stringstream ss;
+          if (unsigned(flags) == 0x01) {
+            for (int i = 0; buffer[i] != '\0'; i++) {
+              ss << buffer[i];
+              _jlm.add_job(Job("CLIENT", ss.str()));
+              ss.str("");
+            }
+          }
+
         } catch (Poco::TimeoutException& e) {
           is_timeout = true;
         } catch (Poco::Net::NetException& e) {

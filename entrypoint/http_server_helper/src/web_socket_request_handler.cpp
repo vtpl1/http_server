@@ -40,6 +40,8 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
       flags = 0;
       n = 0;
       try {
+        std::array<char, MAX_BUFFER_SIZE> channel_list{'1','2','3','4','\0'};
+        ws.sendFrame(channel_list.data(), sizeof(channel_list), Poco::Net::WebSocket::FRAME_OP_TEXT);
         n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
         std::vector<uint8_t> valid_data;
         for (auto&& handler : _status_call_back_handler) {
@@ -54,7 +56,6 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
 
 
         RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
-        // ws.sendFrame(buffer.data(), n, flags);
       } catch (Poco::TimeoutException& e) {
         // RAY_LOG_ERR << e.what();
       } catch (Poco::Net::NetException& e) {
