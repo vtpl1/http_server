@@ -40,21 +40,9 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
       flags = 0;
       n = 0;
       try {
-        std::array<char, MAX_BUFFER_SIZE> channel_list{'1','2','3','4','\0'};
-        ws.sendFrame(channel_list.data(), sizeof(channel_list), Poco::Net::WebSocket::FRAME_OP_TEXT);
+        // std::array<char, MAX_BUFFER_SIZE> channel_list{'1','2','3','4','\0'};
+        // ws.sendFrame(channel_list.data(), sizeof(channel_list), Poco::Net::WebSocket::FRAME_OP_TEXT);
         n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
-        std::vector<uint8_t> valid_data;
-        for (auto&& handler : _status_call_back_handler) {
-          handler(valid_data);
-        }
-        for (auto&& handler : _command_call_back_handler) {
-          std::vector<uint8_t> command_to_send = handler(request.getURI());
-          if (command_to_send.size()) {
-            ws.sendFrame(command_to_send.data(), command_to_send.size());
-          }
-        }
-
-
         RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
       } catch (Poco::TimeoutException& e) {
         // RAY_LOG_ERR << e.what();
@@ -73,6 +61,16 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
             RAY_LOG_ERR << e.what();
             break;
           }
+        }
+      }
+      std::vector<uint8_t> valid_data;
+      for (auto&& handler : _status_call_back_handler) {
+        handler(valid_data);
+      }
+      for (auto&& handler : _command_call_back_handler) {
+        std::vector<uint8_t> command_to_send = handler(request.getURI());
+        if (command_to_send.size()) {
+          ws.sendFrame(command_to_send.data(), command_to_send.size(), Poco::Net::WebSocket::FRAME_OP_TEXT);
         }
       }
       if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE) {

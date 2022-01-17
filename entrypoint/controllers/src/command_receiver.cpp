@@ -64,12 +64,13 @@ void CommandReceiver::run()
         try {
           n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
           RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
-          std::stringstream ss;
-          if (unsigned(flags) == 0x01) {
+
+          if (n > 0) {
             for (int i = 0; buffer[i] != '\0'; i++) {
+              std::stringstream ss;
               ss << buffer[i];
               _jlm.add_job(Job("CLIENT", ss.str()));
-              ss.str("");
+              // ss.swap(std::stringstream());
             }
           }
 
