@@ -15,4 +15,8 @@ Job::Job(const std::string& job_mode, const std::string& channel_id) : channel_i
     output = "rtmp://localhost:900" + channel_id;
   }
 }
-bool Job::compare(const Job& other) const { return (input == other.input && output == other.output); }
+bool Job::equals_to(const Job& other) const { return (input == other.input && output == other.output); }
+bool Job::less_than(const Job& other) const { return (input < other.input && output < other.output); }
+// bool Job::greater_than(const Job& other) const { return (input > other.input && output > other.output); }
+// bool Job::less_than_equals_to(const Job& other) const { return (input <= other.input && output <= other.output); }
+// bool Job::greater_than_equals_to(const Job& other) const { return (input >= other.input && output >= other.output); }

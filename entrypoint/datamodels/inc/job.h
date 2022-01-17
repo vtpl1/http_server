@@ -20,13 +20,16 @@ public:
   std::string channel_id{};
   std::string input{};
   std::string output{};
-  // bool operator==(const Job& job);
-  bool compare(const Job& other) const;
-  // <
-  // >
-  // <=
-  // >=
+  bool equals_to(const Job& other) const;
+  bool less_than(const Job& other) const;
+  // bool greater_than(const Job& other) const;
+  // bool less_than_equals_to(const Job& other) const;
+  // bool greater_than_equals_to(const Job& other) const;
 };
-inline bool operator==(const Job& lhs, const Job& rhs) { return lhs.compare(rhs); }
+inline bool operator==(const Job& lhs, const Job& rhs) { return lhs.equals_to(rhs); }
+inline bool operator<(const Job& lhs, const Job& rhs) { return lhs.less_than(rhs); }
+// inline bool operator>(const Job& lhs, const Job& rhs) { return lhs.greater_than(rhs); }
+// inline bool operator<=(const Job& lhs, const Job& rhs) { return lhs.less_than_equals_to(rhs); }
+// inline bool operator>=(const Job& lhs, const Job& rhs) { return lhs.greater_than_equals_to(rhs); }
 
 #endif // job_h
