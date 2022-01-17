@@ -36,7 +36,7 @@ void PipelineManager::run()
       args.emplace_back(job.input);
       args.emplace_back("-o");
       args.emplace_back(job.output);
-      _pipeline_map.insert(std::pair<Job, std::unique_ptr<Pipeline>>(job, std::make_unique<Pipeline>(command, args, "")));
+      _pipeline_map.insert(std::make_pair(job, std::make_unique<Pipeline>(command, args, "")));
       // _pipeline_map[job] = std::make_unique<Pipeline>(command, args, "");
       //PipelineAndJob rtmp_to_hls(std::make_unique<Pipeline>(command, args, ""), job);
       ///rtmp_to_hls_list.emplace_back(rtmp_to_hls);

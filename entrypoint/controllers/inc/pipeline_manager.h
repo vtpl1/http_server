@@ -8,7 +8,8 @@
 #include <atomic>
 #include <memory>
 #include <thread>
-#include <unordered_map>
+// #include <unordered_map>
+#include <map>
 
 #include "job.h"
 #include "job_list_manager.h"
@@ -34,7 +35,7 @@ private:
 
   std::unique_ptr<std::thread> _thread;
   JobListManager& _jlm;
-  std::unordered_map<Job, std::unique_ptr<Pipeline>> _pipeline_map;
+  std::map<Job, std::unique_ptr<Pipeline>> _pipeline_map;
   // std::vector<PipelineAndJob> rtmp_to_hls_list;
 
 public:

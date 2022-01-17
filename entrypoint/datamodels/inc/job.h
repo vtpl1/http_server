@@ -22,6 +22,10 @@ public:
   std::string output{};
   // bool operator==(const Job& job);
   bool compare(const Job& other) const;
+  // <
+  // >
+  // <=
+  // >=
 };
 inline bool operator==(const Job& lhs, const Job& rhs) { return lhs.compare(rhs); }
 

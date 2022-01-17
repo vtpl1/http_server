@@ -186,9 +186,10 @@ public:
     RAY_LOG(INFO) << "main Started: " << _name_of_app;
     // printProperties("");
     std::string job_mode = config().getString("mode", "server");
+    int server_port = config().getInt("server_port", http_server_default_port);
     if (job_mode == "server") {
       {
-        int server_port = config().getInt("server_port", http_server_default_port);
+
         std::unique_ptr<EndPointManager> epm =
             std::make_unique<EndPointManager>(JobListManager::get_instance(), config().getString("system.currentDir"), server_port);
         std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(JobListManager::get_instance());
@@ -203,7 +204,7 @@ public:
       RAY_LOG_INF << "Server stopped";
     } else if (job_mode == "client") {
       {
-        std::unique_ptr<CommandReceiver> cmdr = std::make_unique<CommandReceiver>(JobListManager::get_instance());
+        std::unique_ptr<CommandReceiver> cmdr = std::make_unique<CommandReceiver>("localhost", server_port, JobListManager::get_instance());
         std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(JobListManager::get_instance());
         cmdr->start();
         plm->start();
