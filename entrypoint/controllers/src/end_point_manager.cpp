@@ -3,6 +3,8 @@
 // *****************************************************
 
 #include <Poco/Path.h>
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
 #include <regex>
 
 #include "end_point_manager.h"
@@ -55,12 +57,17 @@ void EndPointManager::on_status_call_back_event(const std::vector<uint8_t>& data
 }
 std::vector<uint8_t> EndPointManager::on_command_call_back_event(const std::string& req_url)
 {
-  std::vector<uint8_t> ret_jobs;
-  // for (auto &&job : _jlm.get_jobs())
-  // {
-  //   ret_jobs.emplace_back(job.channel_id);
-  // }
-  return ret_jobs;
+  std::vector<uint8_t> ret_buffer;
+  JobList job_list(_jlm.get_jobs());
+  std::stringstream ss;
+  {
+    cereal::BinaryOutputArchive oarchive(ss);
+    oarchive << CEREAL_NVP(job_list);
+  }
+  std::string s = ss.str();
+  std::copy(s.begin(), s.end(), std::back_inserter(ret_buffer));
+
+  return ret_buffer;
 }
 void EndPointManager::run()
 {

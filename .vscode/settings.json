@@ -99,6 +99,9 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "unordered_set": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "complex": "cpp",
+        "typeindex": "cpp",
+        "valarray": "cpp"
     },
 }

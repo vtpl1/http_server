@@ -9,6 +9,8 @@
 #include <Poco/Net/NetException.h>
 #include <Poco/Net/WebSocket.h>
 #include <array>
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
 #include <string>
 
 #include "command_receiver.h"
@@ -18,7 +20,8 @@ constexpr int MAX_BUFFER_SIZE = 1024;
 constexpr int RECEIVE_TIMEOUT_MILLISEC = 500;
 constexpr int PING_SEND_INTERVAL_SEC = 10;
 
-CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm) : _host(std::move(host)), _port(port), _jlm(jlm)
+CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm)
+    : _host(std::move(host)), _port(port), _jlm(jlm)
 {
 }
 
@@ -52,9 +55,11 @@ void CommandReceiver::run()
       Poco::Net::WebSocket ws(cs, request, response);
       ws.setReceiveTimeout(
           Poco::Timespan(0, RECEIVE_TIMEOUT_MILLISEC * 1000)); // Timespan(long seconds, long microseconds)
+      ws.setSendTimeout(
+          Poco::Timespan(0, RECEIVE_TIMEOUT_MILLISEC * 1000)); // Timespan(long seconds, long microseconds)
 
       RAY_LOG_INF << "WebSocket connection established.";
-      std::array<char, MAX_BUFFER_SIZE> buffer{};
+      std::array<uint8_t, MAX_BUFFER_SIZE> buffer{};
       int flags = 0;
       int n = 0;
       while (!_do_shutdown_composite()) {
@@ -66,12 +71,19 @@ void CommandReceiver::run()
           RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
 
           if (n > 0) {
-            for (int i = 0; buffer[i] != '\0'; i++) {
-              std::stringstream ss;
-              ss << buffer[i];
-              _jlm.add_job(Job("CLIENT", ss.str()));
-              // ss.swap(std::stringstream());
+            JobList job_list;
+
+            std::stringstream ss;
+            std::copy(buffer.begin(), buffer.begin() + n, std::ostream_iterator<uint8_t>(ss));
+            cereal::BinaryInputArchive iarchive(ss);
+            iarchive >> job_list;
+            std::stringstream ss1;
+            {
+              cereal::JSONOutputArchive oarchive_json(ss1);
+              oarchive_json(CEREAL_NVP(job_list));
             }
+            std::cout << std::endl << ss1.str() << std::endl;
+            _jlm.update_job_list(job_list);
           }
 
         } catch (Poco::TimeoutException& e) {

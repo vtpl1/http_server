@@ -33,15 +33,13 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
         Poco::Timespan(0, RECEIVE_TIMEOUT_MILLISEC * 1000)); // Timespan(long seconds, long microseconds)
 
     RAY_LOG_INF << "WebSocket connection established.";
-    std::array<char, MAX_BUFFER_SIZE> buffer{};
+    std::array<uint8_t, MAX_BUFFER_SIZE> buffer{};
     int flags = 0;
     int n = 0;
     while (!stopped) {
       flags = 0;
       n = 0;
       try {
-        // std::array<char, MAX_BUFFER_SIZE> channel_list{'1','2','3','4','\0'};
-        // ws.sendFrame(channel_list.data(), sizeof(channel_list), Poco::Net::WebSocket::FRAME_OP_TEXT);
         n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
         RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
       } catch (Poco::TimeoutException& e) {
