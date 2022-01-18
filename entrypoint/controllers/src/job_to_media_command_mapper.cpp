@@ -2,6 +2,11 @@
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
 
+#include "logging.h"
+#include <Poco/File.h>
+#include <Poco/Path.h>
+#include <fstream>
+
 #include "job_to_media_command_mapper.h"
 #include <cereal/archives/json.hpp>
 
@@ -11,19 +16,95 @@ JobToMediaCommandMapper& JobToMediaCommandMapper::get_instance()
   return instance;
 }
 
-
-JobToMediaCommandMapper::JobToMediaCommandMapper()
+void JobToMediaCommandMapper::set_base_dir(std::string _base_dir)
 {
+  JobToMediaCommandMapper::get_instance()._base_dir = _base_dir;
+}
+void JobToMediaCommandMapper::set_file_name(std::string _file_name)
+{
+  JobToMediaCommandMapper::get_instance()._file_name = _file_name;
+}
+
+void JobToMediaCommandMapper::load()
+{
+  Poco::Path path(_base_dir);
+  path.append(_file_name);
+  int ret = 0;
+  try {
+    std::fstream fs;
+    fs.open(path.toString(), std::ios::in);
+    try {
+      cereal::YAMLInputArchive archive(fs);
+      archive >> map;
+    } catch (std::exception& e) {
+      ret++;
+      RAY_LOG_INF << e.what();
+    }
+    fs.close();
+  } catch (std::ifstream::failure& e) {
+    RAY_LOG_INF << e.what();
+    ret++;
+  }
+  if (map.map.empty()) {
+    ret++;
+  }
+  if (ret > 0) {
+    load_defaults();
+    save_defaults();
+  }
+}
+void JobToMediaCommandMapper::load_defaults()
+{
+  if (true) {
     Job job;
-    job.channel_id = "11";
+    job.channel_id = "1";
     MediaCommand media_command;
     media_command.command = "media_converete";
     media_command.input = "rtsp://admin:Admin@123@192.168.1.1/";
+    media_command.output = "rtmp://localhost:9001";
+    map.map.emplace(job, media_command);
+  } else {
+    Job job;
+    job.channel_id = "1";
+    MediaCommand media_command;
+    media_command.command = "media_converete";
+    media_command.input = "rtmp://localhost:9001";
     media_command.output = "./videos/play.m3u8";
     map.map.emplace(job, media_command);
-
+  }
 }
+void JobToMediaCommandMapper::save_defaults()
+{
+  Poco::Path path(_base_dir);
+  path.append(_file_name);
+  try {
+    std::ofstream fs(path.toString());
+    try {
+      cereal::YAMLOutputArchive archive(fs);
+      archive(CEREAL_NVP(map));
+      fs.flush();
+    } catch (std::exception& e) {
+      RAY_LOG_INF << e.what();
+    }
+    fs.close();
+  } catch (std::ofstream::failure& e) {
+    RAY_LOG_INF << e.what();
+  }
+}
+
+JobToMediaCommandMapper::JobToMediaCommandMapper() {}
 MediaCommand JobToMediaCommandMapper::get_media_command(const Job& job)
 {
+  if (JobToMediaCommandMapper::get_instance().map.map.empty()) {
+    JobToMediaCommandMapper::get_instance().load();
+  }
   return JobToMediaCommandMapper::get_instance().map.map[job];
+}
+
+JobMediaCommandMap JobToMediaCommandMapper::get_map()
+{
+  if (JobToMediaCommandMapper::get_instance().map.map.empty()) {
+    JobToMediaCommandMapper::get_instance().load();
+  }
+  return JobToMediaCommandMapper::get_instance().map;
 }
