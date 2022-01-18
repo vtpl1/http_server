@@ -104,3 +104,9 @@ TEST_CASE("job serialize", "[jobs]")
   }
   std::cout << std::endl << ss1.str() << std::endl;
 }
+
+TEST_CASE("Media command serialize", "[media_command]")
+{
+
+
+}
