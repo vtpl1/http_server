@@ -31,11 +31,11 @@ void PipelineManager::run()
     for (auto&& job : _jlm.get_not_running_jobs()) {
       std::string command = "./build/entrypoint/Debug/media_converter.exe";
       std::vector<std::string> args;
-
-      args.emplace_back("-i");
-      args.emplace_back(job.input);
-      args.emplace_back("-o");
-      args.emplace_back(job.output);
+      // FIXME: add media_command
+      // args.emplace_back("-i");
+      // args.emplace_back(job.input);
+      // args.emplace_back("-o");
+      // args.emplace_back(job.output);
       _pipeline_map.insert(std::make_pair(job, std::make_unique<Pipeline>(command, args, "")));
       _jlm.add_running_job(job);
     }

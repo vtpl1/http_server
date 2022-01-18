@@ -77,9 +77,9 @@
 TEST_CASE("job serialize", "[jobs]")
 {
   JobList job_list;
-  Job job1("SERVER", "1");
+  Job job1;
   job_list.push_back(job1);
-  Job job2("SERVER", "2");
+  Job job2;
   job_list.push_back(job2);
 
   std::stringstream ss; // any stream can be used

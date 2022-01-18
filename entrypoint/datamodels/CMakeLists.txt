@@ -19,8 +19,13 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
 add_library(datamodels
     src/job.cpp
     src/status.cpp
+    src/media_command.cpp
+    src/job_media_command_map.cpp
+
     inc/job.h
     inc/status.h
+    inc/media_command.h
+    inc/job_media_command_map.h
     ${PROTO_SRCS}
     ${PROTO_HDRS}
 )

@@ -46,12 +46,13 @@ void EndPointManager::on_url_call_back_event(const std::string& req_url)
   if (std::regex_search(req_url.begin(), req_url.end(), match, rgx)) {
     RAY_LOG_INF << "Request received from : " << match[1];
     std::cout << "match: " << match[1] << '\n';
-    _jlm.add_job(Job("SERVER", match[1]));
+    // FIXME: add media_command
+    // _jlm.add_job(Job("SERVER", match[1]));
   }
 }
 void EndPointManager::on_status_call_back_event(const std::vector<uint8_t>& data)
 {
-  if (data.size() > 0) {
+  if (!data.empty()) {
     RAY_LOG_INF << "Status received ";
   }
 }

@@ -11,6 +11,7 @@
         },
         "protobuf",
         "cereal",
+        "yaml-cpp",
         "catch2"
     ]
 }

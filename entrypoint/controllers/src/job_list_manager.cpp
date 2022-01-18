@@ -43,7 +43,8 @@ void JobListManager::update_job_list(const JobList& job_list, bool is_client_mod
   }
   if (is_client_mode) {
     for (auto&& j : job_list.job_list) {
-      add_job(Job("CLIENT", j.channel_id));
+      // FIXME: add media_command
+      // add_job(Job("CLIENT", j.channel_id));
     }
   }
 }
