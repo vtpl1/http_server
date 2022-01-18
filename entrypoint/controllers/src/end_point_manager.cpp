@@ -95,7 +95,7 @@ void EndPointManager::run()
       RAY_LOG_ERR << url << " not found";
     }
   }
-  _svr->set_delay_for_mount_point(".m3u8", 30);
+  // _svr->set_delay_for_mount_point(".m3u8", 30);
   _svr->set_url_call_back_handler(".m3u8", [this](const std::string& req_uri) { on_url_call_back_event(req_uri); });
   _svr->set_status_call_back_handler([this](const std::vector<uint8_t>& data) { on_status_call_back_event(data); });
   _svr->set_command_call_back_handler(
