@@ -17,8 +17,8 @@ class Job
 {
 public:
   Job() = default;
+  Job(std::string channel_id);
   ~Job() = default;
-  int16_t id{0};
   std::string channel_id{};
   bool equals_to(const Job& other) const;
   bool less_than(const Job& other) const;
@@ -28,7 +28,7 @@ public:
 
   template <class Archive> void serialize(Archive& archive)
   {
-    archive(CEREAL_NVP(id), CEREAL_NVP(channel_id));
+    archive(CEREAL_NVP(channel_id));
   }
 };
 class JobList

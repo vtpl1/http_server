@@ -5,8 +5,9 @@
 #include <algorithm>
 
 #include "pipeline_manager.h"
+#include "job_to_media_command_mapper.h"
 
-PipelineManager::PipelineManager(JobListManager& jlm) : _jlm(jlm) {}
+PipelineManager::PipelineManager(JobListManager& jlm, std::string base_dir) : _jlm(jlm), _base_dir(base_dir) {}
 
 PipelineManager::~PipelineManager() { stop(); }
 void PipelineManager::start() { _thread = std::make_unique<std::thread>(&PipelineManager::run, this); }
@@ -31,12 +32,12 @@ void PipelineManager::run()
     for (auto&& job : _jlm.get_not_running_jobs()) {
       std::string command = "./build/entrypoint/Debug/media_converter.exe";
       std::vector<std::string> args;
-      // FIXME: add media_command
-      // args.emplace_back("-i");
-      // args.emplace_back(job.input);
-      // args.emplace_back("-o");
-      // args.emplace_back(job.output);
-      _pipeline_map.insert(std::make_pair(job, std::make_unique<Pipeline>(command, args, "")));
+      MediaCommand m = JobToMediaCommandMapper::get_media_command(job);
+      args.emplace_back("-i");
+      args.emplace_back(m.input);
+      args.emplace_back("-o");
+      args.emplace_back(m.output);
+      _pipeline_map.insert(std::make_pair(job, std::make_unique<Pipeline>(m.command, args, _base_dir)));
       _jlm.add_running_job(job);
     }
     for (auto&& job : _jlm.get_extra_running_jobs()) {

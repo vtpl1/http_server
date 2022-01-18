@@ -55,21 +55,23 @@ void JobToMediaCommandMapper::load()
 }
 void JobToMediaCommandMapper::load_defaults()
 {
-  if (true) {
+  std::string search_str = "server";
+  if (_file_name.compare(0, search_str.size(), search_str) == 0) {
     Job job;
     job.channel_id = "1";
     MediaCommand media_command;
-    media_command.command = "media_converete";
-    media_command.input = "rtsp://admin:Admin@123@192.168.1.1/";
-    media_command.output = "rtmp://localhost:9001";
+    media_command.command = "media_converter";
+    media_command.input = "rtmp://0.0.0.0:9001";
+    media_command.output = "./videos/1/play.m3u8";
+
     map.map.emplace(job, media_command);
   } else {
     Job job;
     job.channel_id = "1";
     MediaCommand media_command;
-    media_command.command = "media_converete";
-    media_command.input = "rtmp://localhost:9001";
-    media_command.output = "./videos/play.m3u8";
+    media_command.command = "media_converter";
+    media_command.input = "rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/";
+    media_command.output = "rtmp://localhost:9001";
     map.map.emplace(job, media_command);
   }
 }

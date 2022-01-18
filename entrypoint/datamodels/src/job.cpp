@@ -15,6 +15,7 @@
 //     output = "rtmp://localhost:900" + channel_id;
 //   }
 // }
+Job::Job(std::string _channel_id) : channel_id(std::move(_channel_id)) {}
 bool Job::equals_to(const Job& other) const { return (channel_id == other.channel_id); }
 bool Job::less_than(const Job& other) const { return (channel_id < other.channel_id); }
 

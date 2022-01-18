@@ -39,7 +39,8 @@ public:
   void stop();
   void run();
   void add_job(const Job& job);
-  void update_job_list(const JobList& job_list, bool is_client_mode = true);
+  void update_job_list(const JobList& job_list);
+  void clear_job_list();
   void delete_job(Job& job);
   std::vector<Job> get_jobs();
   void add_running_job(const Job& job);

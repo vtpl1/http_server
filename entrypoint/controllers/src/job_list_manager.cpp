@@ -35,18 +35,19 @@ void JobListManager::run()
   // }
 }
 
-void JobListManager::update_job_list(const JobList& job_list, bool is_client_mode)
+void JobListManager::update_job_list(const JobList& job_list)
 {
-  {
-    std::lock_guard<std::mutex> lock(_jobs_mutex);
-    _jobs.clear();
+  clear_job_list();
+
+  for (auto&& j : job_list.job_list) {
+    add_job(Job(j.channel_id));
   }
-  if (is_client_mode) {
-    for (auto&& j : job_list.job_list) {
-      // FIXME: add media_command
-      // add_job(Job("CLIENT", j.channel_id));
-    }
-  }
+}
+
+void JobListManager::clear_job_list()
+{
+  std::lock_guard<std::mutex> lock(_jobs_mutex);
+  _jobs.clear();
 }
 
 void JobListManager::add_job(const Job& job)

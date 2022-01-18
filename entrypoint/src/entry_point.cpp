@@ -19,6 +19,7 @@
 #include "command_receiver.h"
 #include "end_point_manager.h"
 #include "job_list_manager.h"
+#include "job_to_media_command_mapper.h"
 #include "logging.h"
 #include "pipeline.h"
 #include "pipeline_manager.h"
@@ -189,10 +190,12 @@ public:
     int server_port = config().getInt("server_port", http_server_default_port);
     if (job_mode == "server") {
       {
-
-        std::unique_ptr<EndPointManager> epm =
-            std::make_unique<EndPointManager>(JobListManager::get_instance(), config().getString("system.currentDir"), server_port);
-        std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(JobListManager::get_instance());
+        JobToMediaCommandMapper::set_base_dir(get_session_folder());
+        JobToMediaCommandMapper::set_file_name("server.yaml");
+        std::unique_ptr<EndPointManager> epm = std::make_unique<EndPointManager>(
+            JobListManager::get_instance(), config().getString("system.currentDir"), server_port);
+        std::unique_ptr<PipelineManager> plm =
+            std::make_unique<PipelineManager>(JobListManager::get_instance(), config().getString("system.currentDir"));
         epm->start();
         plm->start();
         RAY_LOG_INF << "Server started";
@@ -204,8 +207,12 @@ public:
       RAY_LOG_INF << "Server stopped";
     } else if (job_mode == "client") {
       {
-        std::unique_ptr<CommandReceiver> cmdr = std::make_unique<CommandReceiver>("localhost", server_port, JobListManager::get_instance());
-        std::unique_ptr<PipelineManager> plm = std::make_unique<PipelineManager>(JobListManager::get_instance());
+        JobToMediaCommandMapper::set_base_dir(get_session_folder());
+        JobToMediaCommandMapper::set_file_name("client.yaml");
+        std::unique_ptr<CommandReceiver> cmdr =
+            std::make_unique<CommandReceiver>("localhost", server_port, JobListManager::get_instance());
+        std::unique_ptr<PipelineManager> plm =
+            std::make_unique<PipelineManager>(JobListManager::get_instance(), config().getString("system.currentDir"));
         cmdr->start();
         plm->start();
         RAY_LOG_INF << "Client started";

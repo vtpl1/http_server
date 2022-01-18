@@ -26,9 +26,10 @@ private:
   std::unique_ptr<std::thread> _thread;
   JobListManager& _jlm;
   std::map<Job, std::unique_ptr<Pipeline>> _pipeline_map;
+  std::string _base_dir{};
 
 public:
-  PipelineManager(JobListManager& jlm);
+  PipelineManager(JobListManager& jlm, std::string base_dir);
   ~PipelineManager();
   void start();
   void signal_to_stop();
