@@ -34,6 +34,20 @@ void JobListManager::run()
   //   std::this_thread::sleep_for(std::chrono::seconds(1));
   // }
 }
+
+void JobListManager::update_job_list(const JobList& job_list, bool is_client_mode)
+{
+  {
+    std::lock_guard<std::mutex> lock(_jobs_mutex);
+    _jobs.clear();
+  }
+  if (is_client_mode) {
+    for (auto&& j : job_list.job_list) {
+      add_job(Job("CLIENT", j.channel_id));
+    }
+  }
+}
+
 void JobListManager::add_job(const Job& job)
 {
   std::lock_guard<std::mutex> lock(_jobs_mutex);
