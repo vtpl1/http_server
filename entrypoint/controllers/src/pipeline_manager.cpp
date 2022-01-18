@@ -4,10 +4,12 @@
 
 #include <algorithm>
 
-#include "pipeline_manager.h"
 #include "job_to_media_command_mapper.h"
+#include "pipeline_manager.h"
 
-PipelineManager::PipelineManager(JobListManager& jlm, std::string base_dir) : _jlm(jlm), _base_dir(base_dir) {}
+PipelineManager::PipelineManager(JobListManager& jlm, std::string base_dir) : _jlm(jlm), _base_dir(std::move(base_dir))
+{
+}
 
 PipelineManager::~PipelineManager() { stop(); }
 void PipelineManager::start() { _thread = std::make_unique<std::thread>(&PipelineManager::run, this); }
@@ -41,7 +43,7 @@ void PipelineManager::run()
       _jlm.add_running_job(job);
     }
     for (auto&& job : _jlm.get_extra_running_jobs()) {
-      auto it =_pipeline_map.find(job);
+      auto it = _pipeline_map.find(job);
       if (it != _pipeline_map.end()) {
         _pipeline_map.erase(it);
         _jlm.delete_running_job(job);

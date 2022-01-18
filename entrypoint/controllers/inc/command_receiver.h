@@ -19,7 +19,7 @@ private:
   bool _is_already_shutting_down{false};
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
   std::unique_ptr<std::thread> _thread;
-
+  int _last_sleep_time_in_sec{1};
   JobListManager& _jlm;
   std::string _host{};
   int _port{};
