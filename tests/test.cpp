@@ -10,7 +10,10 @@
 #include <string>
 
 #include "job.h"
+#include "job.pb.h"
 #include "pipeline.h"
+#include "status.h"
+#include "status.pb.h"
 
 TEST_CASE("wrong command should return false", "[pipeline]")
 {
@@ -67,4 +70,12 @@ TEST_CASE("file", "[files]")
   Poco::File file("D:\\WorkFiles\\http_server\\static_html\\favicon1.ico");
 
   REQUIRE_THROWS_AS(file.isFile(), Poco::FileNotFoundException);
+}
+
+TEST_CASE("job serialize", "[jobs]")
+{
+  resource::Job job1;
+  resource::Job job2;
+  REQUIRE(job1 == job2);
+
 }

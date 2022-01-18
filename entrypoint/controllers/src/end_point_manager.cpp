@@ -55,13 +55,12 @@ void EndPointManager::on_status_call_back_event(const std::vector<uint8_t>& data
 }
 std::vector<uint8_t> EndPointManager::on_command_call_back_event(const std::string& req_url)
 {
-  std::vector<uint8_t> jobs;
-  jobs.emplace_back('1');
-  jobs.emplace_back('2');
-  jobs.emplace_back('3');
-  jobs.emplace_back('4');
-  jobs.emplace_back('\0');
-  return jobs;
+  std::vector<uint8_t> ret_jobs;
+  // for (auto &&job : _jlm.get_jobs())
+  // {
+  //   ret_jobs.emplace_back(job.channel_id);
+  // }
+  return ret_jobs;
 }
 void EndPointManager::run()
 {

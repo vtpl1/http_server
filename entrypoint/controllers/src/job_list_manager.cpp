@@ -78,13 +78,13 @@ std::vector<Job> JobListManager::get_not_running_jobs()
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   std::vector<Job> not_running_jobs;
   for (auto&& job : _jobs) {
-    bool is_already_running = false;
+    bool is_match_found = false;
     for (auto&& running_job : _running_jobs) {
       if (running_job == job) {
-        is_already_running = true;
+        is_match_found = true;
       }
     }
-    if (!is_already_running) {
+    if (!is_match_found) {
       not_running_jobs.push_back(job);
     }
   }
@@ -104,7 +104,7 @@ std::vector<Job> JobListManager::get_extra_running_jobs()
         break;
       }
     }
-    if (is_match_found) {
+    if (!is_match_found) {
       extra_running_jobs.push_back(running_job);
     }
   }
