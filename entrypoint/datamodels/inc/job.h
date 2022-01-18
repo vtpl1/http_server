@@ -5,7 +5,7 @@
 #pragma once
 #ifndef job_h
 #define job_h
-#include <cereal/types/map.hpp>
+
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 #include <stdint.h>
@@ -34,9 +34,21 @@ public:
 
   template <class Archive> void serialize(Archive& archive)
   {
-    archive(id, channel_id, input, output, remote_input,
-            remote_output); // serialize things by passing them to the archive
+    archive(CEREAL_NVP(id), CEREAL_NVP(job_state), CEREAL_NVP(channel_id), CEREAL_NVP(input), CEREAL_NVP(output),
+            CEREAL_NVP(remote_input), CEREAL_NVP(remote_output));
   }
+};
+class JobList
+{
+public:
+  JobList() = default;
+  ~JobList() = default;
+  JobList(const std::vector<Job>& __x) : job_list(__x) {}
+  void push_back(const Job& __x) { job_list.push_back(__x); };
+  void emplace_back(const Job&& __x) { job_list.emplace_back(__x); };
+  Job& operator[](int i) { return job_list[i]; };
+  std::vector<Job> job_list;
+  template <class Archive> void serialize(Archive& archive) { archive(CEREAL_NVP(job_list)); }
 };
 inline bool operator==(const Job& lhs, const Job& rhs) { return lhs.equals_to(rhs); }
 inline bool operator<(const Job& lhs, const Job& rhs) { return lhs.less_than(rhs); }

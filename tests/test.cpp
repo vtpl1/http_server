@@ -76,27 +76,29 @@ TEST_CASE("file", "[files]")
 
 TEST_CASE("job serialize", "[jobs]")
 {
+  JobList job_list;
   Job job1("SERVER", "1");
+  job_list.push_back(job1);
 
   std::stringstream ss; // any stream can be used
   {
     cereal::BinaryOutputArchive oarchive(ss); // Create an output archive
     // oarchive(CEREAL_NVP(job1));
     // oarchive(job1);
-    oarchive << job1;
+    oarchive << job_list;
   }
   std::cout << ss.str();
-  Job job2;
+  JobList job_list2;
   ss.seekp(0);
   {
     cereal::BinaryInputArchive iarchive(ss);
-    iarchive >> job2;
+    iarchive >> job_list2;
   }
-  REQUIRE(job1 == job2);
+  REQUIRE(job1 == job_list2[0]);
   std::stringstream ss1;
   {
     cereal::JSONOutputArchive oarchive_json(ss1);
-    oarchive_json(CEREAL_NVP(job2));
+    oarchive_json(CEREAL_NVP(job_list2));
   }
   std::cout << std::endl << ss1.str() << std::endl;
 }
