@@ -2,13 +2,13 @@
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
 
-#include "logging.h"
 #include <Poco/File.h>
 #include <Poco/Path.h>
+#include <cereal/archives/json.hpp>
 #include <fstream>
 
 #include "job_to_media_command_mapper.h"
-#include <cereal/archives/json.hpp>
+#include "logging.h"
 
 JobToMediaCommandMapper& JobToMediaCommandMapper::get_instance()
 {
@@ -18,11 +18,11 @@ JobToMediaCommandMapper& JobToMediaCommandMapper::get_instance()
 
 void JobToMediaCommandMapper::set_base_dir(std::string _base_dir)
 {
-  JobToMediaCommandMapper::get_instance()._base_dir = _base_dir;
+  JobToMediaCommandMapper::get_instance()._base_dir = std::move(_base_dir);
 }
 void JobToMediaCommandMapper::set_file_name(std::string _file_name)
 {
-  JobToMediaCommandMapper::get_instance()._file_name = _file_name;
+  JobToMediaCommandMapper::get_instance()._file_name = std::move(_file_name);
 }
 
 void JobToMediaCommandMapper::load()
@@ -91,7 +91,6 @@ void JobToMediaCommandMapper::save_defaults()
   }
 }
 
-JobToMediaCommandMapper::JobToMediaCommandMapper() {}
 MediaCommand JobToMediaCommandMapper::get_media_command(const Job& job)
 {
   if (JobToMediaCommandMapper::get_instance().map.map.empty()) {
