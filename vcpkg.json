@@ -10,6 +10,7 @@
             ]
         },
         "protobuf",
+        "cereal",
         "catch2"
     ]
 }

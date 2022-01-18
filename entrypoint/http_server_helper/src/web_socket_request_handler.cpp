@@ -69,7 +69,7 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
       }
       for (auto&& handler : _command_call_back_handler) {
         std::vector<uint8_t> command_to_send = handler(request.getURI());
-        if (command_to_send.size()) {
+        if (!command_to_send.empty()) {
           ws.sendFrame(command_to_send.data(), command_to_send.size(), Poco::Net::WebSocket::FRAME_OP_TEXT);
         }
       }

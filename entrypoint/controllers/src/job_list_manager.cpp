@@ -45,8 +45,9 @@ void JobListManager::delete_job(Job& job)
 {
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   auto it = std::find(_jobs.begin(), _jobs.end(), job);
-  if (it != _jobs.end())
+  if (it != _jobs.end()) {
     _jobs.erase(it);
+  }
 }
 std::vector<Job> JobListManager::get_jobs()
 {
@@ -64,8 +65,9 @@ void JobListManager::delete_running_job(Job& job)
 {
   std::lock_guard<std::mutex> lock(_running_jobs_mutex);
   auto it = std::find(_running_jobs.begin(), _running_jobs.end(), job);
-  if (it != _running_jobs.end())
+  if (it != _running_jobs.end()) {
     _running_jobs.erase(it);
+  }
 }
 std::vector<Job> JobListManager::get_running_jobs()
 {

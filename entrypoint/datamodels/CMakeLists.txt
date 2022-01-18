@@ -3,6 +3,7 @@
 # *****************************************************
 
 find_package(protobuf COMPONENTS libprotobuf protoc)
+find_package(cereal REQUIRED)
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
     interfaces/status.proto
@@ -32,5 +33,10 @@ target_include_directories(datamodels
 target_link_libraries(datamodels
     PUBLIC protobuf::libprotobuf
 )
+
+target_link_libraries(datamodels
+    PUBLIC cereal
+)
+
 set_property(TARGET datamodels PROPERTY
   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

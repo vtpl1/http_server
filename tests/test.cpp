@@ -2,6 +2,8 @@
 #include <Poco/File.h>
 #include <catch2/catch.hpp>
 #include <cctype>
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -10,10 +12,10 @@
 #include <string>
 
 #include "job.h"
-#include "job.pb.h"
+// #include "job.pb.h"
 #include "pipeline.h"
 #include "status.h"
-#include "status.pb.h"
+// #include "status.pb.h"
 
 TEST_CASE("wrong command should return false", "[pipeline]")
 {
@@ -74,8 +76,27 @@ TEST_CASE("file", "[files]")
 
 TEST_CASE("job serialize", "[jobs]")
 {
-  resource::Job job1;
-  resource::Job job2;
-  REQUIRE(job1 == job2);
+  Job job1("SERVER", "1");
 
+  std::stringstream ss; // any stream can be used
+  {
+    cereal::BinaryOutputArchive oarchive(ss); // Create an output archive
+    // oarchive(CEREAL_NVP(job1));
+    // oarchive(job1);
+    oarchive << job1;
+  }
+  std::cout << ss.str();
+  Job job2;
+  ss.seekp(0);
+  {
+    cereal::BinaryInputArchive iarchive(ss);
+    iarchive >> job2;
+  }
+  REQUIRE(job1 == job2);
+  std::stringstream ss1;
+  {
+    cereal::JSONOutputArchive oarchive_json(ss1);
+    oarchive_json(CEREAL_NVP(job2));
+  }
+  std::cout << std::endl << ss1.str() << std::endl;
 }
