@@ -30,9 +30,9 @@ void JobToMediaCommandMapper::load()
   Poco::Path path(_base_dir);
   path.append(_file_name);
   int ret = 0;
-  try {
-    std::fstream fs;
-    fs.open(path.toString(), std::ios::in);
+  std::fstream fs(path.toString(), std::ios::in);
+  //if (fs.good())
+  {
     try {
       cereal::YAMLInputArchive archive(fs);
       archive >> map;
@@ -41,10 +41,8 @@ void JobToMediaCommandMapper::load()
       RAY_LOG_INF << e.what();
     }
     fs.close();
-  } catch (std::ifstream::failure& e) {
-    RAY_LOG_INF << e.what();
-    ret++;
   }
+
   if (map.map.empty()) {
     ret++;
   }
@@ -79,8 +77,9 @@ void JobToMediaCommandMapper::save_defaults()
 {
   Poco::Path path(_base_dir);
   path.append(_file_name);
-  try {
-    std::ofstream fs(path.toString());
+  std::ofstream fs(path.toString(), std::ios::out);
+  // if (fs.good())
+  {
     try {
       cereal::YAMLOutputArchive archive(fs);
       archive(CEREAL_NVP(map));
@@ -89,8 +88,6 @@ void JobToMediaCommandMapper::save_defaults()
       RAY_LOG_INF << e.what();
     }
     fs.close();
-  } catch (std::ofstream::failure& e) {
-    RAY_LOG_INF << e.what();
   }
 }
 
