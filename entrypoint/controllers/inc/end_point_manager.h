@@ -27,7 +27,7 @@ private:
   JobListManager& _jlm;
   std::string _base_dir;
   int _server_port;
-  std::map<std::string, int64_t> _last_access_time_map;
+  std::map<std::string, std::chrono::steady_clock::time_point> _last_access_time_map;
 
 public:
   EndPointManager(JobListManager& jlm, std::string base_dir = "./", int server_port = 8080);

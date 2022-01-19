@@ -30,9 +30,9 @@ void PipelineManager::stop()
 }
 void PipelineManager::run()
 {
+
   while (!_do_shutdown_composite()) {
     for (auto&& job : _jlm.get_not_running_jobs()) {
-      std::string command = "./build/entrypoint/Debug/media_converter.exe";
       std::vector<std::string> args;
       MediaCommand m = JobToMediaCommandMapper::get_media_command(job);
       args.emplace_back("-i");

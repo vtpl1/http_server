@@ -54,7 +54,7 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
           try {
             ws.sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PONG);
             last_op_time = std::chrono::high_resolution_clock::now();
-            RAY_LOG_INF << "PONG sent";
+            // RAY_LOG_INF << "PONG sent";
           } catch (Poco::Net::NetException& e) {
             RAY_LOG_ERR << e.what();
             break;

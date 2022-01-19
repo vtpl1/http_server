@@ -1,0 +1,1 @@
+rd /s /q build\entrypoint\Debug\session

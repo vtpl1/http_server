@@ -9,6 +9,9 @@
 
 #include "end_point_manager.h"
 #include "logging.h"
+
+constexpr int CHANNEL_REQ_EXP_TIME_SEC = 10;
+
 // https://streaming.videonetics.com/live/hls/33E2C658-8F16-408A-8523-AAD5F41CB67A_HLS_SERVER_MI/play.m3u8
 //  /live/hls/{stream_id}/play.m3u8
 EndPointManager::EndPointManager(JobListManager& jlm, std::string base_dir, int server_port)
@@ -43,11 +46,18 @@ void EndPointManager::on_url_call_back_event(const std::string& req_url)
   // std::regex rgx(".*videos\\/(\\d+)\\/play\\.m3u8.*");
   std::regex rgx(R"(.*videos\/(\d+)\/play\.m3u8.*)");
   std::smatch match;
-  std::string channel_id;
+
   if (std::regex_search(req_url.begin(), req_url.end(), match, rgx)) {
-    RAY_LOG_INF << "Request received from : " << match[1];
-    std::cout << "match: " << match[1] << '\n';
-    _jlm.add_job(Job(match[1]));
+    std::string channel_id = match[1];
+
+    auto it = _last_access_time_map.find(channel_id);
+    if (it != _last_access_time_map.end()) {
+      it->second = std::chrono::high_resolution_clock::now();
+    } else {
+      _last_access_time_map.insert(std::make_pair(channel_id, std::chrono::high_resolution_clock::now()));
+      RAY_LOG_INF << "Request received from : " << channel_id;
+      _jlm.add_job(Job(channel_id));
+    }
   }
 }
 void EndPointManager::on_status_call_back_event(const std::vector<uint8_t>& data)
@@ -110,7 +120,33 @@ void EndPointManager::run()
       [this](const std::string& req_uri) { return on_command_call_back_event(req_uri); });
 
   //_svr->listen("0.0.0.0", 8080);
-  std::cout << "server entry" << std::endl;
   _svr->start();
-  std::cout << "server exit" << std::endl;
+
+  while (!_do_shutdown_composite()) {
+    std::vector<std::string> temp;
+    for (auto&& it : _last_access_time_map) {
+      if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - it.second)
+              .count() > CHANNEL_REQ_EXP_TIME_SEC) {
+        std::string channel_id = it.first;
+        _jlm.delete_job(Job(channel_id));
+        temp.push_back(channel_id);
+      }
+    }
+    for (auto&& it : temp) {
+      // _last_access_time_map.erase(_last_access_time_map.begin(), _last_access_time_map.find(it));
+      _last_access_time_map.erase(it);
+    }
+
+    // for (std::map<std::string, std::chrono::steady_clock::time_point>::iterator it = _last_access_time_map.begin();
+    //      it != _last_access_time_map.end();) {
+    //   if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - it->second)
+    //           .count() > CHANNEL_REQ_EXP_TIME_SEC) {
+    //     _jlm.delete_job(Job(it->first));
+    //     it = _last_access_time_map.erase(it);
+    //   } else {
+    //     it++;
+    //   }
+    // }
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
 }

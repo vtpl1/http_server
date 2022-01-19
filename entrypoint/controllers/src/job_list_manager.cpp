@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "job_list_manager.h"
+#include "logging.h"
 
 JobListManager& JobListManager::get_instance()
 {
@@ -38,7 +39,7 @@ void JobListManager::run()
 void JobListManager::update_job_list(const JobList& job_list)
 {
   clear_job_list();
-
+  RAY_LOG_INF << "updating job_list";
   for (auto&& j : job_list.job_list) {
     add_job(Job(j.channel_id));
   }
@@ -52,6 +53,7 @@ void JobListManager::clear_job_list()
 
 void JobListManager::add_job(const Job& job)
 {
+  RAY_LOG_INF << "adding job: " << job;
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   if (std::find(_jobs.begin(), _jobs.end(), job) == _jobs.end()) {
     _jobs.emplace_back(job);
@@ -59,6 +61,7 @@ void JobListManager::add_job(const Job& job)
 }
 void JobListManager::delete_job(Job& job)
 {
+  RAY_LOG_INF << "deleting job: " << job;
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   auto it = std::find(_jobs.begin(), _jobs.end(), job);
   if (it != _jobs.end()) {

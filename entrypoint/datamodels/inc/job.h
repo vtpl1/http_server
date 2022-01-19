@@ -8,6 +8,7 @@
 
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
+#include <iostream>
 #include <stdint.h>
 #include <string>
 
@@ -26,10 +27,7 @@ public:
   // bool less_than_equals_to(const Job& other) const;
   // bool greater_than_equals_to(const Job& other) const;
 
-  template <class Archive> void serialize(Archive& archive)
-  {
-    archive(CEREAL_NVP(channel_id));
-  }
+  template <class Archive> void serialize(Archive& archive) { archive(CEREAL_NVP(channel_id)); }
 };
 class JobList
 {
@@ -48,5 +46,10 @@ inline bool operator<(const Job& lhs, const Job& rhs) { return lhs.less_than(rhs
 // inline bool operator>(const Job& lhs, const Job& rhs) { return lhs.greater_than(rhs); }
 // inline bool operator<=(const Job& lhs, const Job& rhs) { return lhs.less_than_equals_to(rhs); }
 // inline bool operator>=(const Job& lhs, const Job& rhs) { return lhs.greater_than_equals_to(rhs); }
+inline std::ostream& operator<<(std::ostream& out, const Job& job)
+{
+  out << job.channel_id;
+  return out;
+}
 
 #endif // job_h
