@@ -102,6 +102,7 @@
         "*.inc": "cpp",
         "complex": "cpp",
         "typeindex": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "filesystem": "cpp"
     },
 }

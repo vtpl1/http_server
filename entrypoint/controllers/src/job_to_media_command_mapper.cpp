@@ -30,9 +30,8 @@ void JobToMediaCommandMapper::load()
   Poco::Path path(_base_dir);
   path.append(_file_name);
   int ret = 0;
-  std::fstream fs(path.toString(), std::ios::in);
-  //if (fs.good())
-  {
+  std::ifstream fs(path.toString(), std::ios::in);
+  if (fs.good()) {
     try {
       cereal::YAMLInputArchive archive(fs);
       archive >> map;
@@ -78,8 +77,7 @@ void JobToMediaCommandMapper::save_defaults()
   Poco::Path path(_base_dir);
   path.append(_file_name);
   std::ofstream fs(path.toString(), std::ios::out);
-  // if (fs.good())
-  {
+  if (fs.good()) {
     try {
       cereal::YAMLOutputArchive archive(fs);
       archive(CEREAL_NVP(map));

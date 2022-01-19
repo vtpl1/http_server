@@ -43,6 +43,7 @@ void EndPointManager::on_url_call_back_event(const std::string& req_url)
   // std::regex rgx(".*videos\\/(\\d+)\\/play\\.m3u8.*");
   std::regex rgx(R"(.*videos\/(\d+)\/play\.m3u8.*)");
   std::smatch match;
+  std::string channel_id;
   if (std::regex_search(req_url.begin(), req_url.end(), match, rgx)) {
     RAY_LOG_INF << "Request received from : " << match[1];
     std::cout << "match: " << match[1] << '\n';
@@ -109,5 +110,7 @@ void EndPointManager::run()
       [this](const std::string& req_uri) { return on_command_call_back_event(req_uri); });
 
   //_svr->listen("0.0.0.0", 8080);
+  std::cout << "server entry" << std::endl;
   _svr->start();
+  std::cout << "server exit" << std::endl;
 }
