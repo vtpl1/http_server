@@ -41,10 +41,10 @@ public:
   void add_job(const Job& job);
   void update_job_list(const JobList& job_list);
   void clear_job_list();
-  void delete_job(Job& job);
+  void delete_job(const Job& job);
   std::vector<Job> get_jobs();
   void add_running_job(const Job& job);
-  void delete_running_job(Job& job);
+  void delete_running_job(const Job& job);
   std::vector<Job> get_running_jobs();
   std::vector<Job> get_not_running_jobs();
   std::vector<Job> get_extra_running_jobs();

@@ -2,13 +2,13 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
-find_package(protobuf COMPONENTS libprotobuf protoc)
+# find_package(protobuf COMPONENTS libprotobuf protoc)
 find_package(cereal REQUIRED)
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-    interfaces/status.proto
-    interfaces/job.proto
-)
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+#     interfaces/status.proto
+#     interfaces/job.proto
+# )
 
 # protobuf_generate(
 #     LANGUAGE cpp
@@ -31,8 +31,8 @@ add_library(datamodels
     inc/function_request_data.h
     inc/function_response_data.h
 
-    ${PROTO_SRCS}
-    ${PROTO_HDRS}
+    # ${PROTO_SRCS}
+    # ${PROTO_HDRS}
 )
 
 target_include_directories(datamodels
@@ -40,9 +40,9 @@ target_include_directories(datamodels
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_link_libraries(datamodels
-    PUBLIC protobuf::libprotobuf
-)
+# target_link_libraries(datamodels
+#     PUBLIC protobuf::libprotobuf
+# )
 
 target_link_libraries(datamodels
     PUBLIC cereal

@@ -59,7 +59,7 @@ void JobListManager::add_job(const Job& job)
     _jobs.emplace_back(job);
   }
 }
-void JobListManager::delete_job(Job& job)
+void JobListManager::delete_job(const Job& job)
 {
   RAY_LOG_INF << "deleting job: " << job;
   std::lock_guard<std::mutex> lock(_jobs_mutex);
@@ -80,7 +80,7 @@ void JobListManager::add_running_job(const Job& job)
     _running_jobs.emplace_back(job);
   }
 }
-void JobListManager::delete_running_job(Job& job)
+void JobListManager::delete_running_job(const Job& job)
 {
   std::lock_guard<std::mutex> lock(_running_jobs_mutex);
   auto it = std::find(_running_jobs.begin(), _running_jobs.end(), job);

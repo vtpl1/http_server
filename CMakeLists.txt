@@ -7,7 +7,6 @@ set(CMAKE_CXX_CLANG_TIDY
     clang-tidy;)
 
 add_subdirectory(utils)
-add_subdirectory(thirdparty/cpp-httplib)
 add_subdirectory(entrypoint)
 add_subdirectory(processes)
 add_subdirectory(tests)
