@@ -38,18 +38,14 @@ private:
   void signal_to_stop();
   void stop();
   void run();
-  // void _register_callback_function();
-  // void _call_function(const std::string& func_name, const std::vector<uint8_t>& args);
-  // void _call_remote_function(const std::string& func_name, const std::vector<uint8_t>& args);
-  // std::unique_ptr<FunctionRequestData> _get_remote_callable_function();
+  static RpcManager& get_instance();
 
 public:
   ~RpcManager();
-  static RpcManager& get_instance();
   static void register_callback_function();
   static void call_function(const std::string& func_name, const std::vector<uint8_t>& args);
   static void call_remote_function(const std::string& func_name, const std::vector<uint8_t>& args);
-  std::unique_ptr<FunctionRequestData> get_remote_callable_function();
+  static std::unique_ptr<FunctionRequestData> get_remote_callable_function();
 
 };
 

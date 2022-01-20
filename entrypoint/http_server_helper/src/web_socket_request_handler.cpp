@@ -3,11 +3,14 @@
 // *****************************************************
 
 #include <Poco/Net/NetException.h>
-#include <Poco/Net/WebSocket.h>
 #include <array>
+#include <cereal/archives/binary.hpp>
+#include <memory>
 #include <thread>
 
+#include "function_request_or_response_data.h"
 #include "logging.h"
+#include "rpc_manager.h"
 #include "web_socket_request_handler.h"
 
 constexpr int MAX_BUFFER_SIZE = 1024;
@@ -21,57 +24,108 @@ WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_
       _status_call_back_handler(std::move(status_call_back_handler)),
       _command_call_back_handler(std::move(command_call_back_handler))
 {
+  buffer.resize(MAX_BUFFER_SIZE);
 }
 
+bool WebSocketRequestHandler::rpc_backend(Poco::Net::WebSocket& ws, std::string& request_uri)
+{
+  int flags = 0;
+  int n = 0;
+  //////////////
+  flags = 0;
+  n = 0;
+  try {
+    n = ws.receiveFrame(buffer.data(), buffer.size(), flags);
+    // RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
+  } catch (Poco::TimeoutException& e) {
+    // RAY_LOG_ERR << e.what();
+  } catch (Poco::Net::NetException& e) {
+    RAY_LOG_ERR << e.what();
+    return false;
+  }
+  if (n > 0) {
+    std::stringstream ss;
+    std::copy(buffer.begin(), buffer.begin() + n, std::ostream_iterator<uint8_t>(ss));
+    cereal::BinaryInputArchive iarchive(ss);
+    FunctionRequestOrResponseData function_request_or_response_data;
+    iarchive >> function_request_or_response_data;
+    if (function_request_or_response_data.function_request == 1) {
+      std::stringstream ss;
+      std::copy(function_request_or_response_data.data.begin(), buffer.end(), std::ostream_iterator<uint8_t>(ss));
+      cereal::BinaryInputArchive iarchive(ss);
+      FunctionRequestData function_request_data;
+      iarchive >> function_request_data;
+
+      // FunctionRequestOrResponseData.data
+      //  |
+      //  |--> FunctionResponseData.args
+      //            |
+      //            |--> Status
+      //  |--> FunctionRequestData.args
+      //            |
+      //            |--> JobData
+
+
+    } else {
+      std::stringstream ss;
+      std::copy(function_request_or_response_data.data.begin(), buffer.end(), std::ostream_iterator<uint8_t>(ss));
+      cereal::BinaryInputArchive iarchive(ss);
+      FunctionResponseData function_response_data;
+      iarchive >> function_response_data;
+    }
+
+    // RpcManager::call_function();
+  }
+  if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING) {
+    if ((std::chrono::duration_cast<std::chrono::milliseconds>(
+             std::chrono::high_resolution_clock::now().time_since_epoch())
+             .count() -
+         last_op_time) >= PONG_MINIMUM_INTERVAL_SEC) {
+      try {
+        ws.sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PONG);
+        last_op_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                           std::chrono::high_resolution_clock::now().time_since_epoch())
+                           .count();
+        // RAY_LOG_INF << "PONG sent";
+      } catch (Poco::Net::NetException& e) {
+        RAY_LOG_ERR << e.what();
+        return false;
+      }
+    }
+  }
+  while (std::unique_ptr<FunctionRequestData> function_request_data = RpcManager::get_remote_callable_function()) {
+  }
+
+  // std::vector<uint8_t> valid_data;
+  // for (auto&& handler : _status_call_back_handler) {
+  //   handler(valid_data);
+  // }
+  // for (auto&& handler : _command_call_back_handler) {
+  //   std::vector<uint8_t> command_to_send = handler(request_uri);
+  //   if (!command_to_send.empty()) {
+  //     ws.sendFrame(command_to_send.data(), static_cast<int>(command_to_send.size()),
+  //                  Poco::Net::WebSocket::FRAME_OP_TEXT);
+  //   }
+  // }
+  return !((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE);
+  //////////////
+  return true;
+}
 void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
                                             Poco::Net::HTTPServerResponse& response)
 {
-  auto last_op_time = std::chrono::high_resolution_clock::now();
+  last_op_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                     std::chrono::high_resolution_clock::now().time_since_epoch())
+                     .count();
+  std::string request_uri = request.getURI();
   try {
     Poco::Net::WebSocket ws(request, response);
-    ws.setReceiveTimeout(
-        Poco::Timespan(0, RECEIVE_TIMEOUT_MICRO_SEC)); // Timespan(long seconds, long microseconds)
+    ws.setReceiveTimeout(Poco::Timespan(0, RECEIVE_TIMEOUT_MICRO_SEC)); // Timespan(long seconds, long microseconds)
 
     RAY_LOG_INF << "WebSocket connection established.";
-    std::array<uint8_t, MAX_BUFFER_SIZE> buffer{};
-    int flags = 0;
-    int n = 0;
+
     while (!stopped) {
-      flags = 0;
-      n = 0;
-      try {
-        n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
-        // RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
-      } catch (Poco::TimeoutException& e) {
-        // RAY_LOG_ERR << e.what();
-      } catch (Poco::Net::NetException& e) {
-        RAY_LOG_ERR << e.what();
-        break;
-      }
-      if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING) {
-        if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - last_op_time)
-                .count() >= PONG_MINIMUM_INTERVAL_SEC) {
-          try {
-            ws.sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PONG);
-            last_op_time = std::chrono::high_resolution_clock::now();
-            // RAY_LOG_INF << "PONG sent";
-          } catch (Poco::Net::NetException& e) {
-            RAY_LOG_ERR << e.what();
-            break;
-          }
-        }
-      }
-      std::vector<uint8_t> valid_data;
-      for (auto&& handler : _status_call_back_handler) {
-        handler(valid_data);
-      }
-      for (auto&& handler : _command_call_back_handler) {
-        std::vector<uint8_t> command_to_send = handler(request.getURI());
-        if (!command_to_send.empty()) {
-          ws.sendFrame(command_to_send.data(), static_cast<int>(command_to_send.size()), Poco::Net::WebSocket::FRAME_OP_TEXT);
-        }
-      }
-      if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE) {
+      if (!rpc_backend(ws, request_uri)) {
         break;
       }
     }

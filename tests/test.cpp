@@ -138,5 +138,5 @@ TEST_CASE("Media command persistance", "[media_command]")
 }
 
 TEST_CASE("rpc constructor", "[rpc]") {
-  RpcManager& rpc_manager = RpcManager::get_instance();
+  // RpcManager& rpc_manager = RpcManager::get_instance();
 }
