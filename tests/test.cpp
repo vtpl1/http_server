@@ -144,7 +144,7 @@ TEST_CASE("function request response", "[rpc]")
 {
   std::vector<uint8_t> buffer; // sendFrame ---> receiveFrame
   {
-    Job job({"channel_id1"});
+    Job job("channel_id1");
     std::cout << job << std::endl;
 
     FunctionRequestData req;
