@@ -14,7 +14,7 @@ void NotFoundRequestHandler::staticHandleRequest(Poco::Net::HTTPServerRequest& r
   response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
   const std::string str = Poco::Net::HTTPResponse::HTTP_REASON_NOT_FOUND;
   response.setReason(str);
-  response.setContentLength(str.length());
+  response.setContentLength(static_cast<std::streamsize>(str.length()));
   response.send() << str;
 }
 void NotFoundRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,

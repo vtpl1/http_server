@@ -12,7 +12,6 @@ add_library(controllers
     src/pipeline.cpp
     src/command_receiver.cpp
     src/job_to_media_command_mapper.cpp
-    src/rpc_manager.cpp
 
     inc/end_point_manager.h
     inc/job_list_manager.h
@@ -20,7 +19,6 @@ add_library(controllers
     inc/pipeline.h
     inc/command_receiver.h
     inc/job_to_media_command_mapper.h
-    inc/rpc_manager.h
 )
 
 target_include_directories(controllers

@@ -20,7 +20,7 @@ public:
   std::vector<uint8_t> args;
   FunctionRequestData() = default;
   ~FunctionRequestData() = default;
-  template <class Archive> void serialize(Archive& archive) { archive(CEREAL_NVP(_func_name), CEREAL_NVP(_args)); }
+  template <class Archive> void serialize(Archive& archive) { archive(CEREAL_NVP(func_name), CEREAL_NVP(args)); }
 };
 
 #endif // function_request_data_h

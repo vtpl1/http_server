@@ -4,13 +4,13 @@
 
 #include <Poco/Util/ServerApplication.h>
 #include <thread>
-
+constexpr int time_out = 10;
 class EntryPoint : public Poco::Util::ServerApplication
 {
   int main(const ArgVec& args) final
   {
     std::cout << "Process started" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(time_out));
     std::cout << "Process stopped" << std::endl;
     return Application::EXIT_OK;
   }

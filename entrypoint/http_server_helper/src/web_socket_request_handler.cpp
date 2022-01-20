@@ -11,7 +11,7 @@
 #include "web_socket_request_handler.h"
 
 constexpr int MAX_BUFFER_SIZE = 1024;
-constexpr int RECEIVE_TIMEOUT_MILLISEC = 500;
+constexpr int RECEIVE_TIMEOUT_MICRO_SEC = 500 * 1000;
 constexpr int PONG_MINIMUM_INTERVAL_SEC = 8;
 
 WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_stopped_event,
@@ -30,7 +30,7 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
   try {
     Poco::Net::WebSocket ws(request, response);
     ws.setReceiveTimeout(
-        Poco::Timespan(0, RECEIVE_TIMEOUT_MILLISEC * 1000)); // Timespan(long seconds, long microseconds)
+        Poco::Timespan(0, RECEIVE_TIMEOUT_MICRO_SEC)); // Timespan(long seconds, long microseconds)
 
     RAY_LOG_INF << "WebSocket connection established.";
     std::array<uint8_t, MAX_BUFFER_SIZE> buffer{};
@@ -41,7 +41,7 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
       n = 0;
       try {
         n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
-        RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
+        // RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
       } catch (Poco::TimeoutException& e) {
         // RAY_LOG_ERR << e.what();
       } catch (Poco::Net::NetException& e) {
@@ -68,7 +68,7 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
       for (auto&& handler : _command_call_back_handler) {
         std::vector<uint8_t> command_to_send = handler(request.getURI());
         if (!command_to_send.empty()) {
-          ws.sendFrame(command_to_send.data(), command_to_send.size(), Poco::Net::WebSocket::FRAME_OP_TEXT);
+          ws.sendFrame(command_to_send.data(), static_cast<int>(command_to_send.size()), Poco::Net::WebSocket::FRAME_OP_TEXT);
         }
       }
       if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE) {

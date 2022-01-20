@@ -52,8 +52,7 @@ void FileRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
     }
     response.add("Access-Control-Allow-Origin", origin);
     Poco::FileInputStream finputstr(request_file.path());
-    std::streamsize fileSize = request_file.getSize();
-    response.setContentLength(fileSize);
+    response.setContentLength(static_cast<std::streamsize>(request_file.getSize()));
     std::ostream& ostr = response.send();
     Poco::StreamCopier::copyStream(finputstr, ostr);
     if (ostr.good()) {

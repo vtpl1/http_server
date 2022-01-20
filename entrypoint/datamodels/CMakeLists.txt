@@ -21,15 +21,11 @@ add_library(datamodels
     src/status.cpp
     src/media_command.cpp
     src/job_media_command_map.cpp
-    src/function_request_data.cpp
-    src/function_response_data.cpp
 
     inc/job.h
     inc/status.h
     inc/media_command.h
     inc/job_media_command_map.h
-    inc/function_request_data.h
-    inc/function_response_data.h
 
     # ${PROTO_SRCS}
     # ${PROTO_HDRS}

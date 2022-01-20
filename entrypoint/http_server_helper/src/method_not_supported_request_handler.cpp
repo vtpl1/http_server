@@ -12,6 +12,6 @@ void MethodNotSupportedRequestHandler::handleRequest(Poco::Net::HTTPServerReques
   response.setStatus(Poco::Net::HTTPResponse::HTTP_METHOD_NOT_ALLOWED);
   const std::string str = Poco::Net::HTTPResponse::HTTP_REASON_METHOD_NOT_ALLOWED;
   response.setReason(str);
-  response.setContentLength(str.length());
+  response.setContentLength(static_cast<std::streamsize>(str.length()));
   response.send() << str;
 }

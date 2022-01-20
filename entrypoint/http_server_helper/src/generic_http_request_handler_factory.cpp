@@ -106,39 +106,41 @@ GenericHttpRequestHandlerFactory::handle_file_request(const Poco::Net::HTTPServe
   for (const auto& entry : _base_dirs) {
     // Prefix match
     auto const req_uri = std::string(req.getURI());
-    if (req_uri.compare(0, entry.first.size(), entry.first) == 0) {
-      std::string sub_path = "/" + req_uri.substr(entry.first.size());
-      if (is_valid_path(sub_path)) {
-        auto path = entry.second + sub_path;
-        if (path.back() == '/') {
-          path += "index.html";
-        }
-        Poco::Path path1(path);
-        std::string ext = path1.getExtension();
-        std::string content_type = "text/plain";
-        auto it = _file_extension_and_mimetype_map.find(ext);
-        if (it != _file_extension_and_mimetype_map.end()) {
-          content_type = it->second;
-        }
-        int delay_val = 0;
-        for (auto&& kv : _pattern_to_delay_map) {
-          auto const regex = std::regex(kv.first);
-          if (std::regex_search(req_uri, regex)) {
-            delay_val = kv.second;
-            // RAY_LOG_INF << "Adding delay in serving: " << req_uri << " sec: " << delay_val;
-            break;
-          }
-        }
-        for (auto&& kv : _pattern_to_url_call_back_handler) {
-          auto const regex = std::regex(kv.first);
-          if (std::regex_search(req_uri, regex)) {
-            kv.second(req_uri);
-            break;
-          }
-        }
-        return new FileRequestHandler(_server_stopped_event, path1.toString(), content_type, delay_val);
+    if (!(req_uri.compare(0, entry.first.size(), entry.first) == 0)) {
+      continue;
+    }
+    std::string sub_path = "/" + req_uri.substr(entry.first.size());
+    if (!is_valid_path(sub_path)) {
+      continue;
+    }
+    auto path = entry.second + sub_path;
+    if (path.back() == '/') {
+      path += "index.html";
+    }
+    Poco::Path path1(path);
+    std::string ext = path1.getExtension();
+    std::string content_type = "text/plain";
+    auto it = _file_extension_and_mimetype_map.find(ext);
+    if (it != _file_extension_and_mimetype_map.end()) {
+      content_type = it->second;
+    }
+    int delay_val = 0;
+    for (auto&& kv : _pattern_to_delay_map) {
+      auto const regex = std::regex(kv.first);
+      if (std::regex_search(req_uri, regex)) {
+        delay_val = kv.second;
+        // RAY_LOG_INF << "Adding delay in serving: " << req_uri << " sec: " << delay_val;
+        break;
       }
     }
+    for (auto&& kv : _pattern_to_url_call_back_handler) {
+      auto const regex = std::regex(kv.first);
+      if (std::regex_search(req_uri, regex)) {
+        kv.second(req_uri);
+        break;
+      }
+    }
+    return new FileRequestHandler(_server_stopped_event, path1.toString(), content_type, delay_val);
   }
   return new NotFoundRequestHandler();
 }

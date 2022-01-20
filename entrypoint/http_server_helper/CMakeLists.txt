@@ -15,6 +15,10 @@ add_library(http_server_helper
     src/server_stopped_event.cpp
     src/web_socket_request_handler.cpp
     src/web_socket_page_request_handler.cpp
+    src/rpc_manager.cpp
+
+    src/function_request_data.cpp
+    src/function_response_data.cpp
 
     inc/http_server.h
     inc/generic_http_request_handler_factory.h
@@ -26,6 +30,9 @@ add_library(http_server_helper
     inc/server_stopped_event.h
     inc/web_socket_request_handler.h
     inc/web_socket_page_request_handler.h
+    inc/rpc_manager.h
+    inc/function_request_data.h
+    inc/function_response_data.h
 )
 
 target_include_directories(http_server_helper

@@ -41,9 +41,10 @@ private:
 
   bool _help_requested{false};
   std::string _name_of_app{};
+  // static std::atomic_bool do_shutdown;
 
 public:
-  static std::atomic_bool do_shutdown;
+
   EntryPoint() { setUnixOptions(true); }
   void initialize(Application& self) override
   {
@@ -95,7 +96,7 @@ public:
           fullKey += '.';
         }
         fullKey.append(key);
-        printProperties(fullKey);
+        printProperties(fullKey); // NOLINT
       }
     }
   }
@@ -170,7 +171,7 @@ public:
   {
     if (l_signo == SIGINT) {
       RAY_LOG(WARNING) << "Signal: " << l_signo << ":SIGINT(Interactive attention signal) received.\n";
-      do_shutdown = true;
+      // do_shutdown = true;
     }
   }
 
@@ -180,7 +181,7 @@ public:
       return Application::EXIT_OK;
     }
     //::ray::RayLog::StartRayLog(name_of_app, ::ray::RayLogLevel::DEBUG, get_session_folder());
-    if (signal(SIGINT, EntryPoint::sigHandlerAppClose) == SIG_ERR) {
+    if (signal(SIGINT, EntryPoint::sigHandlerAppClose) == SIG_ERR) { // NOLINT
       RAY_LOG_FAT << "Can't attach sigHandlerAppClose signal\n";
       return ExitCode::EXIT_OSERR;
     }
@@ -239,58 +240,8 @@ public:
   // .\build\entrypoint\Debug\media_converter.exe -i rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/ -o
   // rtmp://localhost:9001
 
-  int main1(const ArgVec& args)
-  {
-    if (_help_requested) {
-      return Application::EXIT_OK;
-    }
-    //::ray::RayLog::StartRayLog(name_of_app, ::ray::RayLogLevel::DEBUG, get_session_folder());
-    if (signal(SIGINT, EntryPoint::sigHandlerAppClose) == SIG_ERR) {
-      RAY_LOG(FATAL) << "Can't attach sigHandlerAppClose signal\n";
-      return ExitCode::EXIT_OSERR;
-    }
-    RAY_LOG(INFO) << "main Started: " << _name_of_app;
-    {
-      std::string command;
-      std::vector<std::string> args;
-
-      command.append("./HttpServer.exe");
-      std::unique_ptr<Pipeline> http_server = std::make_unique<Pipeline>(command);
-
-      command.clear();
-      command.append("./build/entrypoint/Debug/media_converter.exe");
-      args.emplace_back("-i");
-      args.emplace_back("rtmp://0.0.0.0:9001");
-      args.emplace_back("-o");
-      args.emplace_back("./videos/play.m3u8");
-      std::unique_ptr<Pipeline> rtmp_to_hls = std::make_unique<Pipeline>(command, args, "");
-
-      command.clear();
-      args.clear();
-      command.append("./build/entrypoint/Debug/media_converter.exe");
-      args.emplace_back("-i");
-      args.emplace_back("rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/");
-      args.emplace_back("-o");
-      args.emplace_back("rtmp://localhost:9001");
-      std::unique_ptr<Pipeline> rtsp_to_rtmp = std::make_unique<Pipeline>(command, args, "");
-
-      http_server->start();
-      rtmp_to_hls->start();
-      rtsp_to_rtmp->start();
-
-      waitForTerminationRequest();
-      std::cout << "stop requested" << std::endl;
-
-      http_server->stop();
-      rtmp_to_hls->stop();
-      rtsp_to_rtmp->stop();
-    }
-    RAY_LOG_INF << "Server stopped";
-
-    return Application::EXIT_OK;
-  }
 };
 
-std::atomic_bool EntryPoint::do_shutdown{false};
+// std::atomic_bool EntryPoint::do_shutdown{false};
 
 POCO_SERVER_MAIN(EntryPoint);

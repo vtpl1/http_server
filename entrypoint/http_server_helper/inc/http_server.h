@@ -39,8 +39,8 @@ public:
   bool set_mount_point(const std::string& mount_point, const std::string& dir);
   void set_delay_for_mount_point(const std::string& pattern, const int delay_in_sec);
   void set_url_call_back_handler(const std::string& pattern, URLCallBackHandler handler);
-  void set_status_call_back_handler(const StatusCallBackHandler& handler);
-  void set_command_call_back_handler(const CommandCallBackHandler& handler);
+  void set_status_call_back_handler(StatusCallBackHandler handler);
+  void set_command_call_back_handler(CommandCallBackHandler handler);
   void set_file_extension_and_mimetype_mapping(const char* ext, const char* mime);
 };
 

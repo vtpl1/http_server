@@ -1,5 +1,5 @@
 ---
-Checks:          '*,-modernize-use-trailing-return-type,-misc-unused-parameters,-fuchsia-*,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-hicpp-*,-llvmlibc-*,-altera-*'
+Checks:          '*,-modernize-use-trailing-return-type,-misc-unused-parameters,-fuchsia-*,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-hicpp-*,-llvmlibc-*,-altera-*,-bugprone-easily-swappable-parameters'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -201,4 +201,8 @@ CheckOptions:
     value:           '1'
   - key:             readability-uppercase-literal-suffix.NewSuffixes
     value:           ''
+  - key:             readability-function-cognitive-complexity.IgnoreMacros
+    value:           '1'
+  - key:             readability-function-cognitive-complexity.Threshold
+    value:           '30'
 ...
