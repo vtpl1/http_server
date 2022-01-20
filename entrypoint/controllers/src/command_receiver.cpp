@@ -17,7 +17,7 @@
 #include "logging.h"
 
 constexpr int MAX_BUFFER_SIZE = 1024;
-constexpr int RECEIVE_TIMEOUT_MILLISEC = 500;
+constexpr int RECEIVE_TIMEOUT_MICOR_SEC = 500 * 1000;
 constexpr int PING_SEND_INTERVAL_SEC = 10;
 
 CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm)
@@ -49,14 +49,12 @@ void CommandReceiver::run()
   auto last_op_time = std::chrono::high_resolution_clock::now();
   while (!_do_shutdown_composite()) {
     try {
-      Poco::Net::HTTPClientSession cs("localhost", 8080);
+      Poco::Net::HTTPClientSession cs(_host, _port);
       Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, "/ws", Poco::Net::HTTPMessage::HTTP_1_1);
       Poco::Net::HTTPResponse response;
       Poco::Net::WebSocket ws(cs, request, response);
-      ws.setReceiveTimeout(
-          Poco::Timespan(0, RECEIVE_TIMEOUT_MILLISEC * 1000)); // Timespan(long seconds, long microseconds)
-      ws.setSendTimeout(
-          Poco::Timespan(0, RECEIVE_TIMEOUT_MILLISEC * 1000)); // Timespan(long seconds, long microseconds)
+      ws.setReceiveTimeout(Poco::Timespan(0, RECEIVE_TIMEOUT_MICOR_SEC)); // Timespan(long seconds, long microseconds)
+      ws.setSendTimeout(Poco::Timespan(0, RECEIVE_TIMEOUT_MICOR_SEC));    // Timespan(long seconds, long microseconds)
 
       RAY_LOG_INF << "WebSocket connection established.";
       std::array<uint8_t, MAX_BUFFER_SIZE> buffer{};

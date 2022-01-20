@@ -27,7 +27,7 @@ private:
   std::queue<FunctionResponseData> _response_q;
 
 public:
-  RpcManager(/* args */);
+  RpcManager() = default;
   ~RpcManager();
   void start();
   void signal_to_stop();

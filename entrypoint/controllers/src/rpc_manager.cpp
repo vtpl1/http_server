@@ -6,8 +6,6 @@
 #include "function_request_data.h"
 #include "function_response_data.h"
 
-RpcManager::RpcManager() {}
-
 RpcManager::~RpcManager() { stop(); }
 
 void RpcManager::start() { _thread = std::make_unique<std::thread>(&RpcManager::run, this); }
@@ -31,6 +29,6 @@ void RpcManager::stop()
 
 void RpcManager::run()
 {
-//   while (!_do_shutdown_composite()) {
-//   }
+  //   while (!_do_shutdown_composite()) {
+  //   }
 }

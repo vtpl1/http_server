@@ -10,7 +10,7 @@
 #include "end_point_manager.h"
 #include "logging.h"
 
-constexpr int CHANNEL_REQ_EXP_TIME_SEC = 10;
+constexpr int CHANNEL_REQ_EXP_TIME_MILI_SEC = 10 * 1000;
 
 // https://streaming.videonetics.com/live/hls/33E2C658-8F16-408A-8523-AAD5F41CB67A_HLS_SERVER_MI/play.m3u8
 //  /live/hls/{stream_id}/play.m3u8
@@ -52,9 +52,14 @@ void EndPointManager::on_url_call_back_event(const std::string& req_url)
 
     auto it = _last_access_time_map.find(channel_id);
     if (it != _last_access_time_map.end()) {
-      it->second = std::chrono::high_resolution_clock::now();
+      it->second = std::chrono::duration_cast<std::chrono::milliseconds>(
+                       std::chrono::high_resolution_clock::now().time_since_epoch())
+                       .count();
     } else {
-      _last_access_time_map.insert(std::make_pair(channel_id, std::chrono::high_resolution_clock::now()));
+      _last_access_time_map.insert(
+          std::make_pair(channel_id, std::chrono::duration_cast<std::chrono::milliseconds>(
+                                         std::chrono::high_resolution_clock::now().time_since_epoch())
+                                         .count()));
       RAY_LOG_INF << "Request received from : " << channel_id;
       _jlm.add_job(Job(channel_id));
     }
@@ -125,8 +130,8 @@ void EndPointManager::run()
   while (!_do_shutdown_composite()) {
     std::vector<std::string> temp;
     for (auto&& it : _last_access_time_map) {
-      if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - it.second)
-              .count() > CHANNEL_REQ_EXP_TIME_SEC) {
+      if (((std::chrono::high_resolution_clock::now().time_since_epoch()).count() - it.second) >
+          CHANNEL_REQ_EXP_TIME_MILI_SEC) {
         std::string channel_id = it.first;
         _jlm.delete_job(Job(channel_id));
         temp.push_back(channel_id);
@@ -136,17 +141,6 @@ void EndPointManager::run()
       // _last_access_time_map.erase(_last_access_time_map.begin(), _last_access_time_map.find(it));
       _last_access_time_map.erase(it);
     }
-
-    // for (std::map<std::string, std::chrono::steady_clock::time_point>::iterator it = _last_access_time_map.begin();
-    //      it != _last_access_time_map.end();) {
-    //   if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - it->second)
-    //           .count() > CHANNEL_REQ_EXP_TIME_SEC) {
-    //     _jlm.delete_job(Job(it->first));
-    //     it = _last_access_time_map.erase(it);
-    //   } else {
-    //     it++;
-    //   }
-    // }
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }

@@ -92,11 +92,11 @@ void HttpServer::set_file_extension_and_mimetype_mapping(const char* ext, const 
   _file_extension_and_mimetype_map[ext] = mime;
 }
 
-void HttpServer::set_status_call_back_handler(StatusCallBackHandler handler)
+void HttpServer::set_status_call_back_handler(const StatusCallBackHandler& handler)
 {
-  _status_call_back_handler.emplace_back(handler);
+  _status_call_back_handler.emplace_back(std::move(handler));
 }
-void HttpServer::set_command_call_back_handler(CommandCallBackHandler handler)
+void HttpServer::set_command_call_back_handler(const CommandCallBackHandler& handler)
 {
-  _command_call_back_handler.emplace_back(handler);
+  _command_call_back_handler.emplace_back(std::move(handler));
 }
