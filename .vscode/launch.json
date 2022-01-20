@@ -130,5 +130,36 @@
                 ]
             }
         },
+        {
+            "name": "test_rpc",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            //"program": "${workspaceFolder}/build/tests/Debug/tests.exe",
+            "args": ["[rpc]"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal",
+            "linux": {
+                "name": "tests",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/tests/tests",
+                "args": ["[rpc]"],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [],
+                "console": "integratedTerminal",
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+        },
     ]
 }

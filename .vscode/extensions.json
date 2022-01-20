@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "ms-vscode.cpptools-extension-pack",
-        "notskm.clang-tidy"
+        "notskm.clang-tidy",
+        "wmaurer.change-case"
     ]
 }
