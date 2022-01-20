@@ -51,10 +51,11 @@ bool WebSocketRequestHandler::rpc_backend(Poco::Net::WebSocket& ws, std::string&
     iarchive >> function_request_or_response_data;
     if (function_request_or_response_data.function_request == 1) {
       std::stringstream ss;
-      std::copy(function_request_or_response_data.data.begin(), buffer.end(), std::ostream_iterator<uint8_t>(ss));
+      std::copy(function_request_or_response_data.data.begin(), function_request_or_response_data.data.end(), std::ostream_iterator<uint8_t>(ss));
       cereal::BinaryInputArchive iarchive(ss);
       FunctionRequestData function_request_data;
       iarchive >> function_request_data;
+      RpcManager::call_function(function_request_data.func_name, function_request_data.args);
 
       // FunctionRequestOrResponseData.data
       //  |
@@ -65,10 +66,9 @@ bool WebSocketRequestHandler::rpc_backend(Poco::Net::WebSocket& ws, std::string&
       //            |
       //            |--> JobData
 
-
     } else {
       std::stringstream ss;
-      std::copy(function_request_or_response_data.data.begin(), buffer.end(), std::ostream_iterator<uint8_t>(ss));
+      std::copy(function_request_or_response_data.data.begin(), function_request_or_response_data.data.end(), std::ostream_iterator<uint8_t>(ss));
       cereal::BinaryInputArchive iarchive(ss);
       FunctionResponseData function_response_data;
       iarchive >> function_response_data;

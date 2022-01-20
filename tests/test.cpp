@@ -17,6 +17,9 @@
 #include "pipeline.h"
 #include "status.h"
 // #include "status.pb.h"
+#include "function_request_data.h"
+#include "function_request_or_response_data.h"
+#include "function_response_data.h"
 #include "rpc_manager.h"
 
 TEST_CASE("wrong command should return false", "[pipeline]")
@@ -137,6 +140,114 @@ TEST_CASE("Media command persistance", "[media_command]")
   std::cout << std::endl << ss.str() << std::endl;
 }
 
-TEST_CASE("rpc constructor", "[rpc]") {
-  // RpcManager& rpc_manager = RpcManager::get_instance();
+TEST_CASE("function request response", "[rpc]")
+{
+  std::vector<uint8_t> buffer; // sendFrame ---> receiveFrame
+  {
+    Job job({"channel_id1"});
+    std::cout << job << std::endl;
+
+    FunctionRequestData req;
+    req.func_name = "strat_pipeline";
+    {
+      std::stringstream ss;
+      {
+        cereal::BinaryOutputArchive oarchive(ss);
+        oarchive << CEREAL_NVP(job);
+      }
+      std::string s = ss.str();
+      std::copy(s.begin(), s.end(), std::back_inserter(req.args));
+    }
+
+    FunctionRequestOrResponseData function_request_or_response_data;
+    function_request_or_response_data.function_request = 1;
+    {
+      std::stringstream ss;
+      {
+        cereal::BinaryOutputArchive oarchive(ss);
+        oarchive << CEREAL_NVP(req);
+      }
+      std::string s = ss.str();
+      std::copy(s.begin(), s.end(), std::back_inserter(function_request_or_response_data.data));
+    }
+
+    {
+      std::stringstream ss;
+      {
+        cereal::BinaryOutputArchive oarchive(ss);
+        oarchive << CEREAL_NVP(function_request_or_response_data);
+      }
+      std::string s = ss.str();
+      std::copy(s.begin(), s.end(), std::back_inserter(buffer));
+    }
+
+    std::cout << "Sent Buffer size:----------- " << buffer.size() << std::endl;
+  }
+
+  {
+
+    std::cout << "Received Buffer size:----------- " << buffer.size() << std::endl;
+    FunctionRequestOrResponseData function_request_or_response_data;
+    {
+      int n = buffer.size();
+      std::stringstream ss;
+      std::copy(buffer.begin(), buffer.begin() + n, std::ostream_iterator<uint8_t>(ss));
+      {
+        cereal::BinaryInputArchive iarchive(ss);
+        iarchive >> function_request_or_response_data;
+      }
+    }
+
+    FunctionRequestData req;
+    {
+      int n = function_request_or_response_data.data.size();
+      std::stringstream ss;
+      std::copy(function_request_or_response_data.data.begin(), function_request_or_response_data.data.begin() + n,
+                std::ostream_iterator<uint8_t>(ss));
+      {
+        cereal::BinaryInputArchive iarchive(ss);
+        iarchive >> req;
+      }
+    }
+    Job job;
+    {
+      int n = req.args.size();
+      std::stringstream ss;
+      std::copy(req.args.begin(), req.args.begin() + n, std::ostream_iterator<uint8_t>(ss));
+      {
+        cereal::BinaryInputArchive iarchive(ss);
+        iarchive >> job;
+      }
+    }
+
+    std::cout << "received: " << job << std::endl;
+  }
+
+  // std::stringstream ss;
+  // {
+  //   cereal::BinaryOutputArchive oarchive(ss);
+  //   FunctionRequestOrResponseData function_request_or_response_data;
+  //   function_request_or_response_data.data = req.args;
+  //   oarchive << function_request_or_response_data.data;
+  // }
+  // FunctionRequestData req_;
+  // ss.seekp(0);
+  // {
+  //   cereal::BinaryInputArchive iarchive(ss);
+  //   FunctionRequestOrResponseData function_request_or_response_data;
+  //   iarchive >> function_request_or_response_data.data;
+  //   req_.args = function_request_or_response_data.data;
+  // }
+  // for (auto &&i : req_.args)
+  // {
+  //   std::cout << i << " ";
+  // }
+  // std::cout << std::endl;
+
+  // FunctionResponseData res;
+  // res.args = {0, 1, 0};
+
+  // FunctionRequestOrResponseData res_req;
+  // res_req.function_request = 0;
+  // res_req.data = res.args;
 }

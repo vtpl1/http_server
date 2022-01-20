@@ -8,7 +8,6 @@
 
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
-
 #include <string>
 #include <vector>
 
