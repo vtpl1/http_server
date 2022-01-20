@@ -13,14 +13,13 @@ private:
   std::unique_ptr<std::thread> _thread;
 
 public:
-  Tester() = default;
   Tester()
   {
     _thread = std::make_unique<std::thread>(&Tester::run, this);
     _thread->detach();
   }
   ~Tester() = default;
-  static void run()
+  void run()
   {
     std::cout << "Thread started" << std::endl;
     while (true) {
