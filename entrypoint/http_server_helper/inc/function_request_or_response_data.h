@@ -14,10 +14,16 @@
 class FunctionRequestOrResponseData
 {
 public:
-  int function_request{0};
+  enum RequestOrResponse {
+    UNKNOWN,
+    REQUEST,
+    RESPONSE
+
+  };
+  RequestOrResponse request_or_response{RequestOrResponse::UNKNOWN};
   std::vector<uint8_t> data;
   FunctionRequestOrResponseData() = default;
   ~FunctionRequestOrResponseData() = default;
-  template <class Archive> void serialize(Archive& archive) { archive(CEREAL_NVP(function_request), CEREAL_NVP(data)); }
+  template <class Archive> void serialize(Archive& archive) { archive(CEREAL_NVP(request_or_response), CEREAL_NVP(data)); }
 };
 #endif // function_request_or_response_data_h

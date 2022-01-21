@@ -44,8 +44,11 @@ public:
   ~RpcManager();
   static void register_callback_function();
   static void call_function(const std::string& func_name, const std::vector<uint8_t>& args);
+  static void call_reponse(const std::string& func_name, const std::vector<uint8_t>& args);
   static void call_remote_function(const std::string& func_name, const std::vector<uint8_t>& args);
+  static void call_remote_reponse(const std::string& func_name, const std::vector<uint8_t>& args);
   static std::unique_ptr<FunctionRequestData> get_remote_callable_function();
+  static std::unique_ptr<FunctionResponseData> get_remote_callable_response();
 
 };
 

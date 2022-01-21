@@ -21,7 +21,7 @@ class WebSocketRequestHandler : public PocoNetStoppableHTTPRequestHandler
 private:
   std::vector<StatusCallBackHandler> _status_call_back_handler;
   std::vector<CommandCallBackHandler> _command_call_back_handler;
-  bool rpc_backend(Poco::Net::WebSocket& ws, std::string& request_uri);
+  // bool rpc_backend(Poco::Net::WebSocket& ws, std::string& request_uri);
   std::vector<uint8_t> buffer;
   int64_t last_op_time{0};
 

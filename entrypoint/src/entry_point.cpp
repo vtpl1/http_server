@@ -125,7 +125,7 @@ public:
                           .binding("server_port"));
   }
 
-  void handleConfig(const std::string& name, const std::string& value) { loadConfiguration(value); }
+  void handleConfig(const std::string& /*name*/, const std::string& value) { loadConfiguration(value); }
 
   void handleOption(const std::string& name, const std::string& value) override
   {
@@ -175,7 +175,7 @@ public:
     }
   }
 
-  int main(const ArgVec& args) final
+  int main(const ArgVec& /*args*/) final
   {
     if (_help_requested) {
       return Application::EXIT_OK;

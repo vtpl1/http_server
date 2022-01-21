@@ -16,6 +16,7 @@ add_library(http_server_helper
     src/web_socket_request_handler.cpp
     src/web_socket_page_request_handler.cpp
     src/rpc_manager.cpp
+    src/rpc_handler.cpp
 
     src/function_request_data.cpp
     src/function_response_data.cpp
@@ -32,6 +33,8 @@ add_library(http_server_helper
     inc/web_socket_request_handler.h
     inc/web_socket_page_request_handler.h
     inc/rpc_manager.h
+    inc/rpc_handler.h
+
     inc/function_request_data.h
     inc/function_response_data.h
     inc/function_request_or_response_data.h

@@ -15,10 +15,7 @@
 
 #include "command_receiver.h"
 #include "logging.h"
-
-constexpr int MAX_BUFFER_SIZE = 1024;
-constexpr int RECEIVE_TIMEOUT_MICOR_SEC = 500 * 1000;
-constexpr int PING_SEND_INTERVAL_SEC = 10;
+#include "rpc_handler.h"
 
 CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm)
     : _host(std::move(host)), _port(port), _jlm(jlm)
@@ -44,6 +41,86 @@ void CommandReceiver::stop()
   }
 }
 
+// void CommandReceiver::run()
+// {
+//   auto last_op_time = std::chrono::high_resolution_clock::now();
+//   while (!_do_shutdown_composite()) {
+//     try {
+//       Poco::Net::HTTPClientSession cs(_host, _port);
+//       Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, "/ws", Poco::Net::HTTPMessage::HTTP_1_1);
+//       Poco::Net::HTTPResponse response;
+//       Poco::Net::WebSocket ws(cs, request, response);
+//       ws.setReceiveTimeout(Poco::Timespan(0, RECEIVE_TIMEOUT_MICOR_SEC)); // Timespan(long seconds, long
+//       microseconds) ws.setSendTimeout(Poco::Timespan(0, RECEIVE_TIMEOUT_MICOR_SEC));    // Timespan(long seconds,
+//       long microseconds)
+
+//       RAY_LOG_INF << "WebSocket connection established.";
+//       std::array<uint8_t, MAX_BUFFER_SIZE> buffer{};
+//       int flags = 0;
+//       int n = 0;
+//       while (!_do_shutdown_composite()) {
+//         flags = 0;
+//         n = 0;
+//         try {
+//           n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
+//           _last_sleep_time_in_sec = 1;
+//           // RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
+//         } catch (Poco::TimeoutException& e) {
+//           // FIXME: add consecutive time out count
+//         } catch (Poco::Net::NetException& e) {
+//           RAY_LOG_INF << e.what();
+//           break;
+//         }
+//         if (n > 0) {
+//           JobList job_list;
+
+//           std::stringstream ss;
+//           std::copy(buffer.begin(), buffer.begin() + n, std::ostream_iterator<uint8_t>(ss));
+//           cereal::BinaryInputArchive iarchive(ss);
+//           iarchive >> job_list;
+//           std::stringstream ss1;
+//           {
+//             cereal::JSONOutputArchive oarchive_json(ss1);
+//             oarchive_json(CEREAL_NVP(job_list));
+//           }
+//           _jlm.update_job_list(job_list);
+//         }
+//         if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() -
+//         last_op_time)
+//                 .count() >= PING_SEND_INTERVAL_SEC) {
+//           try {
+//             ws.sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PING);
+//             last_op_time = std::chrono::high_resolution_clock::now();
+//             // RAY_LOG_INF << "PING sent";
+//           } catch (Poco::Net::NetException& e) {
+//             RAY_LOG_ERR << e.what();
+//             break;
+//           }
+//         }
+//         if ((static_cast<unsigned int>(flags) & Poco::Net::WebSocket::FRAME_OP_BITMASK) ==
+//         Poco::Net::WebSocket::FRAME_OP_CLOSE) {
+//           break;
+//         }
+//       }
+//       try {
+//         ws.close();
+//       } catch (Poco::Net::NetException& e) {
+//         RAY_LOG_INF << "Exception " << e.what();
+//       }
+//       RAY_LOG_INF << "WebSocket connection closed.";
+//     } catch (Poco::Net::WebSocketException& exc) {
+//       RAY_LOG_ERR << exc.what();
+//     } catch (Poco::Net::NetException& e) {
+//       RAY_LOG_ERR << e.what();
+//     }
+//     _jlm.clear_job_list();
+//     if (_last_sleep_time_in_sec < 32) {
+//       _last_sleep_time_in_sec *= 2;
+//     }
+//     std::this_thread::sleep_for(std::chrono::seconds(_last_sleep_time_in_sec));
+//   }
+// }
+
 void CommandReceiver::run()
 {
   auto last_op_time = std::chrono::high_resolution_clock::now();
@@ -53,52 +130,10 @@ void CommandReceiver::run()
       Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, "/ws", Poco::Net::HTTPMessage::HTTP_1_1);
       Poco::Net::HTTPResponse response;
       Poco::Net::WebSocket ws(cs, request, response);
-      ws.setReceiveTimeout(Poco::Timespan(0, RECEIVE_TIMEOUT_MICOR_SEC)); // Timespan(long seconds, long microseconds)
-      ws.setSendTimeout(Poco::Timespan(0, RECEIVE_TIMEOUT_MICOR_SEC));    // Timespan(long seconds, long microseconds)
-
       RAY_LOG_INF << "WebSocket connection established.";
-      std::array<uint8_t, MAX_BUFFER_SIZE> buffer{};
-      int flags = 0;
-      int n = 0;
+      RpcHandler rpc_handler(ws, true);
       while (!_do_shutdown_composite()) {
-        flags = 0;
-        n = 0;
-        try {
-          n = ws.receiveFrame(buffer.data(), sizeof(buffer), flags);
-          _last_sleep_time_in_sec = 1;
-          // RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
-        } catch (Poco::TimeoutException& e) {
-          // FIXME: add consecutive time out count
-        } catch (Poco::Net::NetException& e) {
-          RAY_LOG_INF << e.what();
-          break;
-        }
-        if (n > 0) {
-          JobList job_list;
-
-          std::stringstream ss;
-          std::copy(buffer.begin(), buffer.begin() + n, std::ostream_iterator<uint8_t>(ss));
-          cereal::BinaryInputArchive iarchive(ss);
-          iarchive >> job_list;
-          std::stringstream ss1;
-          {
-            cereal::JSONOutputArchive oarchive_json(ss1);
-            oarchive_json(CEREAL_NVP(job_list));
-          }
-          _jlm.update_job_list(job_list);
-        }
-        if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - last_op_time)
-                .count() >= PING_SEND_INTERVAL_SEC) {
-          try {
-            ws.sendFrame(buffer.data(), 0, Poco::Net::WebSocket::FRAME_OP_PING);
-            last_op_time = std::chrono::high_resolution_clock::now();
-            // RAY_LOG_INF << "PING sent";
-          } catch (Poco::Net::NetException& e) {
-            RAY_LOG_ERR << e.what();
-            break;
-          }
-        }
-        if ((flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE) {
+        if (!rpc_handler.do_next()) {
           break;
         }
       }

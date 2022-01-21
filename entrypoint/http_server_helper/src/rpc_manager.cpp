@@ -16,7 +16,6 @@ RpcManager& RpcManager::get_instance()
   return instance;
 }
 
-
 void RpcManager::start() { _thread = std::make_unique<std::thread>(&RpcManager::run, this); }
 
 void RpcManager::signal_to_stop() { _do_shutdown = true; }
@@ -73,4 +72,14 @@ std::unique_ptr<FunctionRequestData> RpcManager::get_remote_callable_function()
     get_instance()._remote_request_q.pop();
   }
   return data;
+}
+
+std::unique_ptr<FunctionResponseData> RpcManager::get_remote_callable_response()
+{
+  std::unique_ptr<FunctionResponseData> data;
+  return data;
+}
+void RpcManager::call_reponse(const std::string& func_name, const std::vector<uint8_t>& args)
+{
+
 }
