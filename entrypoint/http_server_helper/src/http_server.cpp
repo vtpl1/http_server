@@ -39,8 +39,7 @@ void HttpServer::start()
   svs.setReuseAddress(true);
   svs.setReusePort(false);
   _generic_http_request_handler_factory.assign(new GenericHttpRequestHandlerFactory(
-      _base_dirs, _file_extension_and_mimetype_map, _pattern_to_delay_map, _pattern_to_url_call_back_handler,
-      _status_call_back_handler, _command_call_back_handler));
+      _base_dirs, _file_extension_and_mimetype_map, _pattern_to_delay_map, _pattern_to_url_call_back_handler));
   _srv = std::make_unique<Poco::Net::HTTPServer>(_generic_http_request_handler_factory, svs, http_server_params);
   _srv->start();
 }
@@ -90,13 +89,4 @@ void HttpServer::set_url_call_back_handler(const std::string& pattern, URLCallBa
 void HttpServer::set_file_extension_and_mimetype_mapping(const char* ext, const char* mime)
 {
   _file_extension_and_mimetype_map[ext] = mime;
-}
-
-void HttpServer::set_status_call_back_handler(StatusCallBackHandler handler)
-{
-  _status_call_back_handler.emplace_back(std::move(handler));
-}
-void HttpServer::set_command_call_back_handler(CommandCallBackHandler handler)
-{
-  _command_call_back_handler.emplace_back(std::move(handler));
 }

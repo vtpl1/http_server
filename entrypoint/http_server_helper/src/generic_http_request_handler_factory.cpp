@@ -19,14 +19,11 @@
 GenericHttpRequestHandlerFactory::GenericHttpRequestHandlerFactory(
     std::map<std::string, std::string> base_dirs, std::map<std::string, std::string> file_extension_and_mimetype_map,
     std::map<std::string, int> pattern_to_delay_map,
-    std::map<std::string, URLCallBackHandler> pattern_to_url_call_back_handler,
-    std::vector<StatusCallBackHandler> status_call_back_handler,
-    std::vector<CommandCallBackHandler> command_call_back_handler)
+    std::map<std::string, URLCallBackHandler> pattern_to_url_call_back_handler)
     : _base_dirs(std::move(base_dirs)), _file_extension_and_mimetype_map(std::move(file_extension_and_mimetype_map)),
       _pattern_to_delay_map(std::move(pattern_to_delay_map)),
       _pattern_to_url_call_back_handler(std::move(pattern_to_url_call_back_handler)),
-      _status_call_back_handler(std::move(status_call_back_handler)),
-      _command_call_back_handler(std::move(command_call_back_handler)), _server_stopped_event(new ServerStoppedEvent())
+      _server_stopped_event(new ServerStoppedEvent())
 {
 }
 
@@ -40,7 +37,7 @@ GenericHttpRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServ
   //   RAY_LOG_INF << it.first + ": " + it.second;
   // }
   if (request.find("Upgrade") != request.end() && Poco::icompare(request["Upgrade"], "websocket") == 0) {
-    return new WebSocketRequestHandler(_server_stopped_event, _status_call_back_handler, _command_call_back_handler);
+    return new WebSocketRequestHandler(_server_stopped_event);
   }
   if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_OPTIONS) {
     return new OptionsRequestHandler();

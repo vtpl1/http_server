@@ -17,14 +17,9 @@ constexpr int MAX_BUFFER_SIZE = 1024;
 constexpr int RECEIVE_TIMEOUT_MICRO_SEC = 500 * 1000;
 constexpr int PONG_MINIMUM_INTERVAL_SEC = 8;
 
-WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_stopped_event,
-                                                 std::vector<StatusCallBackHandler> status_call_back_handler,
-                                                 std::vector<CommandCallBackHandler> command_call_back_handler)
-    : PocoNetStoppableHTTPRequestHandler(std::move(server_stopped_event)),
-      _status_call_back_handler(std::move(status_call_back_handler)),
-      _command_call_back_handler(std::move(command_call_back_handler))
+WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_stopped_event)
+    : PocoNetStoppableHTTPRequestHandler(std::move(server_stopped_event))
 {
-  buffer.resize(MAX_BUFFER_SIZE);
 }
 
 // bool WebSocketRequestHandler::rpc_backend(Poco::Net::WebSocket& ws, std::string& request_uri)
@@ -113,9 +108,6 @@ WebSocketRequestHandler::WebSocketRequestHandler(ServerStoppedEvent::Ptr server_
 void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
                                             Poco::Net::HTTPServerResponse& response)
 {
-  last_op_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                     std::chrono::high_resolution_clock::now().time_since_epoch())
-                     .count();
   std::string request_uri = request.getURI();
   try {
     Poco::Net::WebSocket ws(request, response);
