@@ -19,7 +19,7 @@ private:
   int64_t _last_ping_time{0};
 
   bool readData(int& n, int& flags);
-  bool processPingPong(int& n, int& flags);
+  bool processPingPong(int& flags);
   bool processRecivedData(int n);
   bool processDataToSend();
   bool sendData(Poco::Net::WebSocket::FrameOpcodes flags);
