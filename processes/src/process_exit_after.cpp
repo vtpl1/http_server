@@ -4,6 +4,8 @@
 
 #include <Poco/Util/ServerApplication.h>
 #include <thread>
+#include <iostream>
+
 constexpr int time_out = 10;
 class EntryPoint : public Poco::Util::ServerApplication
 {
