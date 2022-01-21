@@ -41,7 +41,7 @@ bool RpcHandler::sendData(std::vector<uint8_t>& buffer, Poco::Net::WebSocket::Fr
 {
   // Poco::Net::WebSocket::FRAME_OP_PONG
   try {
-    int n = _web_socket.sendFrame(buffer.data(), buffer.size(), flags);
+    int n = _web_socket.sendFrame(buffer.data(), static_cast<int>(buffer.size()), flags);
     if (n != buffer.size()) {
       return false;
     }
@@ -54,10 +54,8 @@ bool RpcHandler::sendData(std::vector<uint8_t>& buffer, Poco::Net::WebSocket::Fr
   }
   return true;
 }
-bool RpcHandler::do_next()
+bool RpcHandler::readData(int& n, int& flags)
 {
-  int n = 0;
-  int flags = 0;
   bool is_timeout = false;
   try {
     flags = 0;
@@ -72,44 +70,10 @@ bool RpcHandler::do_next()
     RAY_LOG_ERR << e.what();
     return false;
   }
-  if ((n == 0) && (flags == 0) && !is_timeout) {
-    return false;
-  }
-  auto ui_flags = static_cast<unsigned int>(flags);
-  if (ui_flags > 0) {
-    if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE)) {
-      std::cout << "close request received" << std::endl;
-      return false;
-    }
-    if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING)) {
-      return sendData(Poco::Net::WebSocket::FRAME_OP_PONG);
-    }
-    if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PONG)) {
-      _pong_received = true;
-    }
-  }
-  if (_send_periodic_ping) {
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                      std::chrono::high_resolution_clock::now().time_since_epoch())
-                      .count();
-    if ((now - _last_ping_time) >= PING_PONG_GAP_SEC) {
-      if (!_pong_received) {
-        RAY_LOG_ERR << "Pong not received on time";
-        return false;
-      }
-    }
-    if ((now - _last_op_time) >= PING_MINIMUM_INTERVAL_SEC) {
-      _last_ping_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                            std::chrono::high_resolution_clock::now().time_since_epoch())
-                            .count();
-      _pong_received = false;
-      return sendData(Poco::Net::WebSocket::FRAME_OP_PING);
-    }
-  }
-  if (n == 0) {
-    RAY_LOG_ERR << "Unexpected here";
-    return false;
-  }
+  return !((n == 0) && (flags == 0) && !is_timeout);
+}
+bool RpcHandler::processRecivedData(int n)
+{
   FunctionRequestOrResponseData function_request_or_response_data;
   {
     std::stringstream ss;
@@ -123,9 +87,8 @@ bool RpcHandler::do_next()
       FunctionRequestOrResponseData::RequestOrResponse::REQUEST) {
     FunctionRequestData req;
     {
-      int n = function_request_or_response_data.data.size();
       std::stringstream ss;
-      std::copy(function_request_or_response_data.data.begin(), function_request_or_response_data.data.begin() + n,
+      std::copy(function_request_or_response_data.data.begin(), function_request_or_response_data.data.end(),
                 std::ostream_iterator<uint8_t>(ss));
       {
         cereal::BinaryInputArchive iarchive(ss);
@@ -137,9 +100,8 @@ bool RpcHandler::do_next()
              FunctionRequestOrResponseData::RequestOrResponse::RESPONSE) {
     FunctionResponseData req;
     {
-      int n = function_request_or_response_data.data.size();
       std::stringstream ss;
-      std::copy(function_request_or_response_data.data.begin(), function_request_or_response_data.data.begin() + n,
+      std::copy(function_request_or_response_data.data.begin(), function_request_or_response_data.data.end(),
                 std::ostream_iterator<uint8_t>(ss));
       {
         cereal::BinaryInputArchive iarchive(ss);
@@ -150,6 +112,10 @@ bool RpcHandler::do_next()
   } else {
     RAY_LOG_ERR << "Unexpected";
   }
+  return true;
+}
+bool RpcHandler::processDataToSend()
+{
   bool is_continue = false;
   do {
     std::unique_ptr<FunctionRequestData> function_request_data = RpcManager::get_remote_callable_function();
@@ -194,4 +160,49 @@ bool RpcHandler::do_next()
   } while (is_continue);
 
   return true;
+}
+bool RpcHandler::do_next()
+{
+  int n = 0;
+  int flags = 0;
+  if (!readData(n, flags)) {
+    return false;
+  }
+  auto ui_flags = static_cast<unsigned int>(flags);
+  if (ui_flags > 0) {
+    if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE)) {
+      std::cout << "close request received" << std::endl;
+      return false;
+    }
+    if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING)) {
+      return sendData(Poco::Net::WebSocket::FRAME_OP_PONG);
+    }
+    if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PONG)) {
+      _pong_received = true;
+    }
+  }
+  if (_send_periodic_ping) {
+    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      std::chrono::high_resolution_clock::now().time_since_epoch())
+                      .count();
+    if ((now - _last_ping_time) >= PING_PONG_GAP_SEC) {
+      if (!_pong_received) {
+        RAY_LOG_ERR << "Pong not received on time";
+        return false;
+      }
+    }
+    if ((now - _last_op_time) >= PING_MINIMUM_INTERVAL_SEC) {
+      _last_ping_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::high_resolution_clock::now().time_since_epoch())
+                            .count();
+      _pong_received = false;
+      return sendData(Poco::Net::WebSocket::FRAME_OP_PING);
+    }
+  }
+  if (n > 0) {
+    if (processRecivedData(n)) {
+      return false;
+    }
+  }
+  return !processDataToSend();
 }
