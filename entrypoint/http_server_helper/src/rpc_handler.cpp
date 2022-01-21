@@ -147,7 +147,7 @@ bool RpcHandler::processDataToSend()
           FunctionRequestOrResponseData::RequestOrResponse::RESPONSE;
       is_continue = true;
     }
-    if (function_request_or_response_data.data.size() > 0) {
+    if (!function_request_or_response_data.data.empty()) {
       std::stringstream ss;
       {
         cereal::BinaryOutputArchive oarchive(ss);
@@ -165,7 +165,7 @@ bool RpcHandler::processDataToSend()
 
   return true;
 }
-bool RpcHandler::processPingPong(int& n, int& flags)
+bool RpcHandler::processPingPong(int& flags)
 {
   auto ui_flags = static_cast<unsigned int>(flags);
   if (ui_flags > 0) {
@@ -209,11 +209,11 @@ bool RpcHandler::do_next()
   if (!readData(n, flags)) {
     return false;
   }
-  if (processPingPong(n, flags) == false) {
+  if (!processPingPong(flags)) {
     return false;
   }
   if (n > 0) {
-    if (processRecivedData(n) == false) {
+    if (!processRecivedData(n)) {
       return false;
     }
   }
