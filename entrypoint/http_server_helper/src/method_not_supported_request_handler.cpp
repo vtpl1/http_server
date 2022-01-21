@@ -5,7 +5,7 @@
 
 #include "method_not_supported_request_handler.h"
 
-void MethodNotSupportedRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
+void MethodNotSupportedRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& /*request*/,
                                                      Poco::Net::HTTPServerResponse& response)
 {
   response.setContentType("text/plain");

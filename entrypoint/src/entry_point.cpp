@@ -70,7 +70,7 @@ public:
     Application::uninitialize();
   }
 
-  void handleHelp(const std::string& name, const std::string& value)
+  void handleHelp(const std::string& /*name*/, const std::string& /*value*/)
   {
     _help_requested = true;
     displayHelp();

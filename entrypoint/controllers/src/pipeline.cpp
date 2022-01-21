@@ -14,6 +14,16 @@ Pipeline::Pipeline(std::string command)
 Pipeline::Pipeline(std::string command, Poco::Process::Args args, std::string initial_directory)
     : _command(std::move(command)), _args(std::move(args)), _initial_directory(std::move(initial_directory))
 {
+  std::stringstream ss;
+  ss << "[";
+  ss << _command;
+  for (const auto& piece : _args) {
+    ss << " ";
+    ss << piece;
+  }
+  ss << "]";
+
+  _composite_command = ss.str();
   start();
 }
 Pipeline::~Pipeline() { stop(); }
@@ -62,16 +72,6 @@ void Pipeline::stop()
 }
 void Pipeline::run()
 {
-  std::stringstream ss;
-  ss << "[";
-  ss << _command;
-  for (const auto& piece : _args) {
-    ss << " ";
-    ss << piece;
-  }
-  ss << "]";
-
-  _composite_command = ss.str();
 
   RAY_LOG_INF << "Thread Started for " << _composite_command;
   while (!_do_shutdown_composite()) {

@@ -16,4 +16,9 @@ PocoNetStoppableHTTPRequestHandler::~PocoNetStoppableHTTPRequestHandler()
 {
   _server_stopped_event->serverStopped -= Poco::delegate(this, &PocoNetStoppableHTTPRequestHandler::onServerStopped);
 }
-void PocoNetStoppableHTTPRequestHandler::onServerStopped(const bool& abortCurrent) { stopped = true; }
+void PocoNetStoppableHTTPRequestHandler::onServerStopped(const bool& abortCurrent)
+{
+  if (abortCurrent) {
+    stopped = true;
+  }
+}

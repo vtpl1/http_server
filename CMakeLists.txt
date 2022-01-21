@@ -8,5 +8,5 @@ set(CMAKE_CXX_CLANG_TIDY
 
 add_subdirectory(utils)
 add_subdirectory(entrypoint)
-add_subdirectory(processes)
-add_subdirectory(tests)
+# add_subdirectory(processes)
+# add_subdirectory(tests)

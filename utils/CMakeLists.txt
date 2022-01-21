@@ -6,6 +6,11 @@ add_library(utils STATIC
   inc/logging.h
 )
 
+set_target_properties(utils
+  PROPERTIES
+    CXX_CLANG_TIDY ""
+)
+
 target_include_directories(utils
   PUBLIC inc
 )

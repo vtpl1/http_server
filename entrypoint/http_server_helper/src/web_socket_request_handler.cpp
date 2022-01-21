@@ -35,7 +35,7 @@ bool WebSocketRequestHandler::rpc_backend(Poco::Net::WebSocket& ws, std::string&
   flags = 0;
   n = 0;
   try {
-    n = ws.receiveFrame(buffer.data(), buffer.size(), flags);
+    n = ws.receiveFrame(buffer.data(), static_cast<int>(buffer.size()), flags);
     // RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
   } catch (Poco::TimeoutException& e) {
     // RAY_LOG_ERR << e.what();
