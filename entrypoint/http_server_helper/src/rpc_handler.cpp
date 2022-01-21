@@ -40,6 +40,7 @@ bool RpcHandler::sendData(std::vector<uint8_t>& buffer)
 bool RpcHandler::sendData(std::vector<uint8_t>& buffer, Poco::Net::WebSocket::FrameOpcodes flags)
 {
   // Poco::Net::WebSocket::FRAME_OP_PONG
+  RAY_LOG_INF << "Sent: " << buffer.size() << " , " << flags;
   try {
     int n = _web_socket.sendFrame(buffer.data(), static_cast<int>(buffer.size()), flags);
     if (n != buffer.size()) {
@@ -60,7 +61,7 @@ bool RpcHandler::readData(int& n, int& flags)
   try {
     flags = 0;
     n = _web_socket.receiveFrame(_buffer.data(), static_cast<int>(_buffer.size()), flags);
-    // RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
+    RAY_LOG_INF << Poco::format("Frame received (length=%d, flags=0x%x).", n, unsigned(flags));
   } catch (Poco::TimeoutException& e) {
     is_timeout = true;
   } catch (Poco::Net::WebSocketException& e) {
@@ -146,38 +147,38 @@ bool RpcHandler::processDataToSend()
           FunctionRequestOrResponseData::RequestOrResponse::RESPONSE;
       is_continue = true;
     }
-    std::stringstream ss;
-    {
-      cereal::BinaryOutputArchive oarchive(ss);
-      oarchive << CEREAL_NVP(function_request_or_response_data);
+    if (function_request_or_response_data.data.size() > 0) {
+      std::stringstream ss;
+      {
+        cereal::BinaryOutputArchive oarchive(ss);
+        oarchive << CEREAL_NVP(function_request_or_response_data);
+      }
+
+      std::string s = ss.str();
+      std::copy(s.begin(), s.end(), std::back_inserter(send_buffer));
+      if (!sendData(send_buffer)) {
+        return false;
+      }
     }
 
-    std::string s = ss.str();
-    std::copy(s.begin(), s.end(), std::back_inserter(send_buffer));
-    if (!sendData(send_buffer)) {
-      return false;
-    }
   } while (is_continue);
 
   return true;
 }
-bool RpcHandler::do_next()
+bool RpcHandler::processPingPong(int& n, int& flags)
 {
-  int n = 0;
-  int flags = 0;
-  if (!readData(n, flags)) {
-    return false;
-  }
   auto ui_flags = static_cast<unsigned int>(flags);
   if (ui_flags > 0) {
     if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_CLOSE)) {
-      std::cout << "close request received" << std::endl;
+      RAY_LOG_INF << "Close Request Received";
       return false;
     }
     if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PING)) {
+      RAY_LOG_INF << "Ping Received";
       return sendData(Poco::Net::WebSocket::FRAME_OP_PONG);
     }
     if (((ui_flags & Poco::Net::WebSocket::FRAME_OP_BITMASK) == Poco::Net::WebSocket::FRAME_OP_PONG)) {
+      RAY_LOG_INF << "Pong Received";
       _pong_received = true;
     }
   }
@@ -199,10 +200,22 @@ bool RpcHandler::do_next()
       return sendData(Poco::Net::WebSocket::FRAME_OP_PING);
     }
   }
+  return true;
+}
+bool RpcHandler::do_next()
+{
+  int n = 0;
+  int flags = 0;
+  if (!readData(n, flags)) {
+    return false;
+  }
+  if (processPingPong(n, flags) == false) {
+    return false;
+  }
   if (n > 0) {
-    if (processRecivedData(n)) {
+    if (processRecivedData(n) == false) {
       return false;
     }
   }
-  return !processDataToSend();
+  return processDataToSend();
 }

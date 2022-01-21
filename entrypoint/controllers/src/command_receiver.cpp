@@ -149,9 +149,9 @@ void CommandReceiver::run()
       RAY_LOG_ERR << e.what();
     }
     _jlm.clear_job_list();
-    if (_last_sleep_time_in_sec < 32) {
-      _last_sleep_time_in_sec *= 2;
-    }
+    // if (_last_sleep_time_in_sec < 32) {
+    //   _last_sleep_time_in_sec *= 2;
+    // }
     std::this_thread::sleep_for(std::chrono::seconds(_last_sleep_time_in_sec));
   }
 }

@@ -67,10 +67,10 @@ void RpcManager::call_remote_function(const std::string& func_name, const std::v
 std::unique_ptr<FunctionRequestData> RpcManager::get_remote_callable_function()
 {
   std::unique_ptr<FunctionRequestData> data;
-  if (!get_instance()._request_q.empty()) {
-    data = std::make_unique<FunctionRequestData>(get_instance()._remote_request_q.front());
-    get_instance()._remote_request_q.pop();
-  }
+  // if (!get_instance()._request_q.empty()) {
+  //   data = std::make_unique<FunctionRequestData>(get_instance()._remote_request_q.front());
+  //   get_instance()._remote_request_q.pop();
+  // }
   return data;
 }
 
