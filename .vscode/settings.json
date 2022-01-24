@@ -103,6 +103,13 @@
         "complex": "cpp",
         "typeindex": "cpp",
         "valarray": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp",
+        "*.ipp": "cpp",
+        "strstream": "cpp",
+        "codecvt": "cpp",
+        "source_location": "cpp",
+        "rope": "cpp"
     },
 }

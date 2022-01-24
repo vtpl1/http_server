@@ -3,6 +3,8 @@ find_package(Poco REQUIRED Util Net)
 add_subdirectory(controllers)
 add_subdirectory(datamodels)
 add_subdirectory(http_server_helper)
+add_subdirectory(http_server_async_helper)
+add_subdirectory(rpc_handler)
 
 add_executable(entrypoint
     src/entry_point.cpp
