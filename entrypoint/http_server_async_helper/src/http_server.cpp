@@ -4,12 +4,19 @@
 #include <Poco/File.h>
 #include <Poco/Path.h>
 #include <algorithm>
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/dispatch.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/asio/strand.hpp>
-#include <boost/beast/core.hpp>
+// #include <boost/beast/core.hpp>
+// #include <boost/beast/http.hpp>
 #include <boost/beast/ssl.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/beast/websocket/ssl.hpp>
+// #include <boost/beast/version.hpp>
+// #include <boost/beast/websocket.hpp>
+// #include <boost/beast/websocket/ssl.hpp>
+#include <boost/beast.hpp>
+#include <boost/make_unique.hpp>
+#include <boost/optional.hpp>
 #include <cstdlib>
 #include <functional>
 #include <iostream>
@@ -177,8 +184,240 @@ beast::string_view mime_type(beast::string_view path)
   return "application/text";
 }
 // Report a failure
-void fail(beast::error_code ec, char const* what) { RAY_LOG_ERR << what << ": " << ec.message(); }
+inline void fail(beast::error_code ec, char const* what) { RAY_LOG_ERR << what << ": " << ec.message(); }
 
+class websocket_session : public std::enable_shared_from_this<websocket_session>
+{
+  websocket::stream<beast::tcp_stream> ws_;
+  beast::flat_buffer buffer_;
+
+public:
+  // Take ownership of the socket
+  explicit websocket_session(tcp::socket&& socket) : ws_(std::move(socket)) {}
+
+  // Start the asynchronous accept operation
+  template <class Body, class Allocator> void do_accept(http::request<Body, http::basic_fields<Allocator>> req)
+  {
+    // Set suggested timeout settings for the websocket
+    ws_.set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
+
+    // Set a decorator to change the Server of the handshake
+    ws_.set_option(websocket::stream_base::decorator([](websocket::response_type& res) {
+      res.set(http::field::server, std::string(BOOST_BEAST_VERSION_STRING) + " advanced-server");
+    }));
+
+    // Accept the websocket handshake
+    ws_.async_accept(req, beast::bind_front_handler(&websocket_session::on_accept, shared_from_this()));
+  }
+
+private:
+  void on_accept(beast::error_code ec)
+  {
+    if (ec) {
+      return fail(ec, "accept");
+    }
+
+    // Read a message
+    do_read();
+  }
+
+  void do_read()
+  {
+    // Read a message into our buffer
+    ws_.async_read(buffer_, beast::bind_front_handler(&websocket_session::on_read, shared_from_this()));
+  }
+
+  void on_read(beast::error_code ec, std::size_t bytes_transferred)
+  {
+    boost::ignore_unused(bytes_transferred);
+
+    // This indicates that the websocket_session was closed
+    if (ec == websocket::error::closed) {
+      return;
+    }
+
+    if (ec) {
+      fail(ec, "read");
+    }
+
+    // Echo the message
+    ws_.text(ws_.got_text());
+    ws_.async_write(buffer_.data(), beast::bind_front_handler(&websocket_session::on_write, shared_from_this()));
+  }
+
+  void on_write(beast::error_code ec, std::size_t bytes_transferred)
+  {
+    boost::ignore_unused(bytes_transferred);
+
+    if (ec) {
+      return fail(ec, "write");
+    }
+
+    // Clear the buffer
+    buffer_.consume(buffer_.size());
+
+    // Do another read
+    do_read();
+  }
+};
+
+// Append an HTTP rel-path to a local filesystem path.
+// The returned path is normalized for the platform.
+std::string path_cat(beast::string_view base, beast::string_view path)
+{
+  if (base.empty())
+    return std::string(path);
+  std::string result(base);
+#ifdef BOOST_MSVC
+  char constexpr path_separator = '\\';
+  if (result.back() == path_separator)
+    result.resize(result.size() - 1);
+  result.append(path.data(), path.size());
+  for (auto& c : result)
+    if (c == '/')
+      c = path_separator;
+#else
+  char constexpr path_separator = '/';
+  if (result.back() == path_separator)
+    result.resize(result.size() - 1);
+  result.append(path.data(), path.size());
+#endif
+  return result;
+}
+
+// This function produces an HTTP response for the given
+// request. The type of the response object depends on the
+// contents of the request, so the interface requires the
+// caller to pass a generic lambda for receiving the response.
+template <class Body, class Allocator, class Send>
+void handle_request(const DocRoots& doc_roots, http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send)
+{
+  // Returns a bad request response
+  auto const bad_request = [&req](beast::string_view why) {
+    http::response<http::string_body> res{http::status::bad_request, req.version()};
+    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http::field::content_type, "text/html");
+    res.keep_alive(req.keep_alive());
+    res.body() = std::string(why);
+    res.prepare_payload();
+    return res;
+  };
+
+  // Returns a not found response
+  auto const not_found = [&req](beast::string_view target) {
+    http::response<http::string_body> res{http::status::not_found, req.version()};
+    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http::field::content_type, "text/html");
+    res.keep_alive(req.keep_alive());
+    res.body() = "The resource '" + std::string(target) + "' was not found.";
+    res.prepare_payload();
+    return res;
+  };
+
+  // Returns a server error response
+  auto const server_error = [&req](beast::string_view what) {
+    http::response<http::string_body> res{http::status::internal_server_error, req.version()};
+    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http::field::content_type, "text/html");
+    res.keep_alive(req.keep_alive());
+    res.body() = "An error occurred: '" + std::string(what) + "'";
+    res.prepare_payload();
+    return res;
+  };
+
+  // Returns a options response
+  auto const options_request = [&req]() {
+    http::response<http::string_body> res{http::status::ok, req.version()};
+    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http::field::content_type, "text/html");
+    res.keep_alive(req.keep_alive());
+    std::string origin = "*";
+    // std::string origin = req["Origin"];
+    // if (origin.empty()) {
+    //   std::cout << "empty" << std::endl;
+    //   origin = "*";
+    // }
+    std::cout << "Options requested" << std::endl;
+    res.set(http::field::access_control_allow_origin, origin);
+    // res.set("Access-Control-Allow-Credentials", "true");
+    // res.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    // res.set("Access-Control-Allow-Headers", "Accept,Authorization, "
+    //                                         "Keep-Alive,X-CustomHeader,Origin,DNT,User-Agent,X-Requested-With,If-"
+    //                                         "Modified-Since,Cache-Control,Content-Type,Range");
+    // res.set("Access-Control-Expose-Headers", "Content-Length,Content-Range");
+
+    res.prepare_payload();
+    return res;
+  };
+
+  // Make sure we can handle the method
+  if (req.method() != http::verb::get && req.method() != http::verb::options && req.method() != http::verb::head) {
+    return send(bad_request("Unknown HTTP-method"));
+  }
+  // Request path must be absolute and not contain "..".
+  if (req.target().empty() || req.target()[0] != '/' || req.target().find("..") != beast::string_view::npos) {
+    return send(bad_request("Illegal request-target"));
+  }
+
+  // Build the path to the requested file
+  std::string doc_root = "./";
+  auto req_uri = req.target();
+  for (const auto& entry : doc_roots) {
+    // Prefix match
+    std::size_t found = req.target().rfind(entry.first);
+    if (found != std::string::npos) {
+      doc_root = entry.second;
+      req_uri = req_uri.substr(found + entry.first.size());
+      std::cout << "{" << req_uri << "}" << std::endl;
+      break;
+    }
+  }
+  std::string path = path_cat(doc_root, req_uri);
+  if (req_uri.back() == '/') {
+    path.append("index.html");
+  }
+
+  // Attempt to open the file
+  beast::error_code ec;
+  http::file_body::value_type body;
+  body.open(path.c_str(), beast::file_mode::scan, ec);
+
+  // Handle the case where the file doesn't exist
+  if (ec == beast::errc::no_such_file_or_directory) {
+    return send(not_found(req.target()));
+  }
+  // Handle an unknown error
+  if (ec) {
+    return send(server_error(ec.message()));
+  }
+
+  // Cache the size since we need it after the move
+  auto const size = body.size();
+
+  // Respond to HEAD request
+  if (req.method() == http::verb::head) {
+    http::response<http::empty_body> res{http::status::ok, req.version()};
+    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http::field::content_type, mime_type(path));
+    res.content_length(size);
+    res.keep_alive(req.keep_alive());
+    return send(std::move(res));
+  }
+
+  // Respond to HEAD request
+  if (req.method() == http::verb::options) {
+    return send(options_request());
+  }
+
+  // Respond to GET request
+  http::response<http::file_body> res{std::piecewise_construct, std::make_tuple(std::move(body)),
+                                      std::make_tuple(http::status::ok, req.version())};
+  res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+  res.set(http::field::content_type, mime_type(path));
+  res.content_length(size);
+  res.keep_alive(req.keep_alive());
+  return send(std::move(res));
+}
 // Handles an HTTP server connection
 class http_session : public std::enable_shared_from_this<http_session>
 {
@@ -313,15 +552,41 @@ private:
     }
 
     // Send the response
-    handle_request(*doc_root_, parser_->release(), queue_);
+    handle_request(*doc_roots_, parser_->release(), queue_);
 
     // If we aren't at the queue limit, try to pipeline another request
     if (!queue_.is_full()) {
       do_read();
     }
   }
-  void on_write(bool close, beast::error_code ec, std::size_t bytes_transferred) {}
-  void do_close() {}
+  void on_write(bool close, beast::error_code ec, std::size_t bytes_transferred)
+  {
+    boost::ignore_unused(bytes_transferred);
+
+    if (ec) {
+      return fail(ec, "write");
+    }
+
+    if (close) {
+      // This means we should close the connection, usually because
+      // the response indicated the "Connection: close" semantic.
+      return do_close();
+    }
+
+    // Inform the queue that a write completed
+    if (queue_.on_write()) {
+      // Read another request
+      do_read();
+    }
+  }
+  void do_close()
+  {
+    // Send a TCP shutdown
+    beast::error_code ec;
+    stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
+
+    // At this point the connection is closed gracefully
+  }
 };
 
 // Accepts incoming connections and launches the sessions

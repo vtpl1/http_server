@@ -11,6 +11,12 @@ add_library(http_server_async_helper
     inc/http_server.h
 )
 
+if (MSVC)
+target_compile_options(http_server_async_helper
+    PUBLIC -bigobj
+)
+endif()
+
 target_include_directories(http_server_async_helper
     PUBLIC inc
 )
