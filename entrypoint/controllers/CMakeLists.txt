@@ -28,8 +28,7 @@ target_include_directories(controllers
 target_link_libraries(controllers
     PRIVATE utils
     PUBLIC datamodels
-    PUBLIC http_server_async_helper
-    # PUBLIC rpc_handler
+    PUBLIC http_server_helper
     PRIVATE Poco::Foundation
     PRIVATE yaml-cpp
 )
