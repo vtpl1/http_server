@@ -30,14 +30,15 @@ RpcHandler::RpcHandler(Poco::Net::WebSocket& web_socket, bool send_periodic_ping
 bool RpcHandler::sendData(Poco::Net::WebSocket::FrameOpcodes flags)
 {
   std::vector<uint8_t> buffer;
-  return sendData(buffer, flags);
+  // buffer.push_back(0);
+  return sendData(buffer, static_cast<int>(Poco::Net::WebSocket::FRAME_FLAG_FIN | flags));
 }
 bool RpcHandler::sendData(std::vector<uint8_t>& buffer)
 {
-  return sendData(buffer, Poco::Net::WebSocket::FRAME_OP_BINARY);
+  return sendData(buffer, static_cast<int>(Poco::Net::WebSocket::FRAME_BINARY));
 }
 
-bool RpcHandler::sendData(std::vector<uint8_t>& buffer, Poco::Net::WebSocket::FrameOpcodes flags)
+bool RpcHandler::sendData(std::vector<uint8_t>& buffer, int flags)
 {
   // Poco::Net::WebSocket::FRAME_OP_PONG
   RAY_LOG_INF << "Sent: " << buffer.size() << " , " << flags;
@@ -46,9 +47,9 @@ bool RpcHandler::sendData(std::vector<uint8_t>& buffer, Poco::Net::WebSocket::Fr
     if (n != buffer.size()) {
       return false;
     }
-    _last_op_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::high_resolution_clock::now().time_since_epoch())
-                        .count();
+    _last_op_time =
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch())
+            .count();
   } catch (Poco::Net::NetException& e) {
     RAY_LOG_ERR << e.what();
     return false;
@@ -183,9 +184,9 @@ bool RpcHandler::processPingPong(int& flags)
     }
   }
   if (_send_periodic_ping) {
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                      std::chrono::high_resolution_clock::now().time_since_epoch())
-                      .count();
+    int64_t now =
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch())
+            .count();
     if ((now - _last_ping_time) >= PING_PONG_GAP_SEC) {
       if (!_pong_received) {
         RAY_LOG_ERR << "Pong not received on time";
@@ -193,9 +194,9 @@ bool RpcHandler::processPingPong(int& flags)
       }
     }
     if ((now - _last_op_time) >= PING_MINIMUM_INTERVAL_SEC) {
-      _last_ping_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                            std::chrono::high_resolution_clock::now().time_since_epoch())
-                            .count();
+      _last_ping_time =
+          std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch())
+              .count();
       _pong_received = false;
       return sendData(Poco::Net::WebSocket::FRAME_OP_PING);
     }

@@ -195,10 +195,10 @@ public:
       res.set(http::field::server, std::string(BOOST_BEAST_VERSION_STRING) + " advanced-server");
     }));
 
-    // Set the control callback. This will be called
-    // on every incoming ping, pong, and close frame.
-    ws_.control_callback(
-        std::bind(&websocket_session::on_control_callback, this, std::placeholders::_1, std::placeholders::_2));
+    ws_.control_callback([this](beast::websocket::frame_type kind, beast::string_view payload) {
+      // Do something with the payload
+      on_callback(kind, payload);
+    });
 
     // Accept the websocket handshake
     ws_.async_accept(req, beast::bind_front_handler(&websocket_session::on_accept, shared_from_this()));
@@ -232,6 +232,10 @@ private:
     // Read a message into our buffer
     ws_.async_read(buffer_, beast::bind_front_handler(&websocket_session::on_read, shared_from_this()));
   }
+  void on_callback(beast::websocket::frame_type kind, beast::string_view payload)
+  {
+    std::cout << "Control received: " << static_cast<int>(kind) << " :: " << payload << std::endl;
+  }
 
   void on_read(beast::error_code ec, std::size_t bytes_transferred)
   {
@@ -245,10 +249,13 @@ private:
     if (ec) {
       fail(ec, "read");
     }
-
+    std::cout << "MONOTOSH: " << bytes_transferred << " : " << beast::make_printable(buffer_.data()) << std::endl;
     // Echo the message
-    ws_.text(ws_.got_text());
-    ws_.async_write(buffer_.data(), beast::bind_front_handler(&websocket_session::on_write, shared_from_this()));
+    if (ws_.got_text()) {
+      std::cout << "Trying to write" << std::endl;
+      ws_.text(ws_.got_text());
+      ws_.async_write(buffer_.data(), beast::bind_front_handler(&websocket_session::on_write, shared_from_this()));
+    }
   }
 
   void on_write(beast::error_code ec, std::size_t bytes_transferred)
@@ -337,16 +344,15 @@ void handle_request(const DocRoots& doc_roots, http::request<Body, http::basic_f
     res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
     res.set(http::field::content_type, "text/html");
     res.keep_alive(req.keep_alive());
-    std::string origin = "*";
-    // std::string origin = req["Origin"];
-    // if (origin.empty()) {
-    //   std::cout << "empty" << std::endl;
-    //   origin = "*";
-    // }
-    std::cout << "Options requested" << std::endl;
+    std::string origin(req["Origin"]);
+    if (origin.empty()) {
+      origin = "*";
+    }
     res.set(http::field::access_control_allow_origin, origin);
+    std::cout << "Options requested " << req.target() << " : " << res[http::field::access_control_allow_origin]
+              << std::endl;
     // res.set("Access-Control-Allow-Credentials", "true");
-    // res.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.set(http::field::access_control_allow_methods, "GET,POST,OPTIONS");
     // res.set("Access-Control-Allow-Headers", "Accept,Authorization, "
     //                                         "Keep-Alive,X-CustomHeader,Origin,DNT,User-Agent,X-Requested-With,If-"
     //                                         "Modified-Since,Cache-Control,Content-Type,Range");
@@ -374,7 +380,6 @@ void handle_request(const DocRoots& doc_roots, http::request<Body, http::basic_f
     if (found != std::string::npos) {
       doc_root = entry.second;
       req_uri = req_uri.substr(found + entry.first.size());
-      std::cout << "{" << req_uri << "}" << std::endl;
       break;
     }
   }
@@ -422,6 +427,12 @@ void handle_request(const DocRoots& doc_roots, http::request<Body, http::basic_f
   res.set(http::field::content_type, mime_type(path));
   res.content_length(size);
   res.keep_alive(req.keep_alive());
+  std::string origin(req["Origin"]);
+  if (origin.empty()) {
+    origin = "*";
+  }
+  res.set(http::field::access_control_allow_origin, origin);
+  std::cout << "GET requested " << req.target() << " : " << res[http::field::access_control_allow_origin] << std::endl;
   return send(std::move(res));
 }
 // Handles an HTTP server connection

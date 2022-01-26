@@ -24,7 +24,7 @@ private:
   bool processDataToSend();
   bool sendData(Poco::Net::WebSocket::FrameOpcodes flags);
   bool sendData(std::vector<uint8_t>& buffer);
-  bool sendData(std::vector<uint8_t>& buffer, Poco::Net::WebSocket::FrameOpcodes flags);
+  bool sendData(std::vector<uint8_t>& buffer, int flags);
 
 public:
   RpcHandler(Poco::Net::WebSocket& web_socket, bool send_periodic_ping = false);
