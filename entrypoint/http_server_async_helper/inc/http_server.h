@@ -5,15 +5,17 @@
 #pragma once
 #ifndef http_server_h
 #define http_server_h
+#include "pch.h"
+
 #include <functional>
 #include <map>
 #include <memory>
 #include <string>
-#include <boost/asio.hpp>
-
-namespace net = boost::asio;            // from <boost/asio.hpp>
 
 #include "http_server_data_models.h"
+
+namespace net = boost::asio; // from <boost/asio.hpp>
+
 using DocRoots = std::map<std::string const, std::string const>;
 
 class HttpServer

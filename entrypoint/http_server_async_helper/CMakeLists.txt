@@ -11,12 +11,19 @@ add_library(http_server_async_helper
     inc/http_server.h
 )
 
-if (MSVC)
-target_compile_options(http_server_async_helper
-    PUBLIC -bigobj
+target_precompile_headers(http_server_async_helper
+  PUBLIC    inc/pch.h
+  PRIVATE    inc/pch_internal.h
 )
-endif()
-
+# if (MSVC)
+# target_compile_options(http_server_async_helper
+#     PUBLIC -bigobj
+# )
+# endif()
+target_compile_definitions(http_server_async_helper
+    PUBLIC WIN32_LEAN_AND_MEAN
+    PUBLIC _WIN32_WINNT=_WIN32_WINNT_WIN7
+)
 target_include_directories(http_server_async_helper
     PUBLIC inc
 )

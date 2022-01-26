@@ -4,19 +4,7 @@
 #include <Poco/File.h>
 #include <Poco/Path.h>
 #include <algorithm>
-#include <boost/asio/bind_executor.hpp>
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/signal_set.hpp>
-#include <boost/asio/strand.hpp>
-// #include <boost/beast/core.hpp>
-// #include <boost/beast/http.hpp>
-#include <boost/beast/ssl.hpp>
-// #include <boost/beast/version.hpp>
-// #include <boost/beast/websocket.hpp>
-// #include <boost/beast/websocket/ssl.hpp>
-#include <boost/beast.hpp>
-#include <boost/make_unique.hpp>
-#include <boost/optional.hpp>
+
 #include <cstdlib>
 #include <functional>
 #include <iostream>
@@ -25,8 +13,9 @@
 #include <thread>
 #include <vector>
 
+#include "pch.h"
 #include "http_server.h"
-#include "logging.h"
+
 // #include "server_certificate.h"
 
 constexpr int EXPIRES_AFTER_TIME_OUT = 30;
@@ -206,11 +195,28 @@ public:
       res.set(http::field::server, std::string(BOOST_BEAST_VERSION_STRING) + " advanced-server");
     }));
 
+    // Set the control callback. This will be called
+    // on every incoming ping, pong, and close frame.
+    ws_.control_callback(
+        std::bind(&websocket_session::on_control_callback, this, std::placeholders::_1, std::placeholders::_2));
+
     // Accept the websocket handshake
     ws_.async_accept(req, beast::bind_front_handler(&websocket_session::on_accept, shared_from_this()));
   }
 
 private:
+
+    void
+    on_control_callback(
+        websocket::frame_type kind,
+        boost::beast::string_view payload)
+    {
+        boost::ignore_unused(kind, payload);
+
+        // Note that there is activity
+        // activity();
+    }
+
   void on_accept(beast::error_code ec)
   {
     if (ec) {
