@@ -7,10 +7,7 @@
 #define http_server_h
 #include "http_server_data_models.h"
 #include "pch.h"
-
-namespace net = boost::asio; // from <boost/asio.hpp>
-
-using DocRoots = std::map<std::string const, std::string const>;
+#include "server.hpp"
 
 class HttpServer
 {
@@ -24,7 +21,7 @@ private:
   std::vector<StatusCallBackHandler> _status_call_back_handler;
   std::vector<CommandCallBackHandler> _command_call_back_handler;
   std::unique_ptr<std::thread> _thread;
-  std::unique_ptr<net::io_context> _ioc;
+  std::unique_ptr<http::server::Server> _server;
 
   void run();
 

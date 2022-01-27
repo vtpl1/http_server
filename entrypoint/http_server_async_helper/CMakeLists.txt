@@ -7,19 +7,27 @@ find_package(OpenSSL REQUIRED)
 find_package(Poco REQUIRED Util)
 add_library(http_server_async_helper
     src/http_server.cpp
+    src/http_session.cpp
+    src/server.cpp
+    # src/connection_manager.cpp
 
     inc/http_server.h
+
+
+    inc/server.hpp
+    inc/http_session.hpp
+    # inc/connection_manager.hpp
 )
 
 target_precompile_headers(http_server_async_helper
   PUBLIC    inc/pch.h
-  PRIVATE    inc/pch_internal.h
+  PRIVATE   inc/pch_internal.h
 )
-# if (MSVC)
-# target_compile_options(http_server_async_helper
-#     PUBLIC -bigobj
-# )
-# endif()
+if (MSVC)
+target_compile_options(http_server_async_helper
+    PUBLIC -bigobj
+)
+endif()
 target_compile_definitions(http_server_async_helper
     PUBLIC WIN32_LEAN_AND_MEAN
     PUBLIC _WIN32_WINNT=_WIN32_WINNT_WIN7
