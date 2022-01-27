@@ -30,20 +30,25 @@ RpcHandler::RpcHandler(Poco::Net::WebSocket& web_socket, bool send_periodic_ping
 bool RpcHandler::sendData(Poco::Net::WebSocket::FrameOpcodes flags)
 {
   std::vector<uint8_t> buffer;
+  unsigned flag = 0;
+  flag |= flags;
+  flag |= Poco::Net::WebSocket::FRAME_FLAG_FIN;
   // buffer.push_back(0);
-  return sendData(buffer, static_cast<int>(Poco::Net::WebSocket::FRAME_FLAG_FIN | flags));
+  return sendData(buffer, flag);
 }
 bool RpcHandler::sendData(std::vector<uint8_t>& buffer)
 {
-  return sendData(buffer, static_cast<int>(Poco::Net::WebSocket::FRAME_BINARY));
+  unsigned flag = 0;
+  flag |= Poco::Net::WebSocket::FRAME_BINARY;
+  return sendData(buffer, flag);
 }
 
-bool RpcHandler::sendData(std::vector<uint8_t>& buffer, int flags)
+bool RpcHandler::sendData(std::vector<uint8_t>& buffer, unsigned flag)
 {
   // Poco::Net::WebSocket::FRAME_OP_PONG
-  RAY_LOG_INF << "Sent: " << buffer.size() << " , " << flags;
+  RAY_LOG_INF << "Sent: " << buffer.size() << " , " << flag;
   try {
-    int n = _web_socket.sendFrame(buffer.data(), static_cast<int>(buffer.size()), flags);
+    int n = _web_socket.sendFrame(buffer.data(), static_cast<int>(buffer.size()), static_cast<int>(flag));
     if (n != buffer.size()) {
       return false;
     }

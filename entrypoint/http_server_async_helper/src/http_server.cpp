@@ -13,8 +13,8 @@
 #include <thread>
 #include <vector>
 
-#include "pch.h"
 #include "http_server.h"
+#include "pch.h"
 
 // #include "server_certificate.h"
 
@@ -205,17 +205,13 @@ public:
   }
 
 private:
+  void on_control_callback(websocket::frame_type kind, boost::beast::string_view payload)
+  {
+    boost::ignore_unused(kind, payload);
 
-    void
-    on_control_callback(
-        websocket::frame_type kind,
-        boost::beast::string_view payload)
-    {
-        boost::ignore_unused(kind, payload);
-
-        // Note that there is activity
-        // activity();
-    }
+    // Note that there is activity
+    // activity();
+  }
 
   void on_accept(beast::error_code ec)
   {
