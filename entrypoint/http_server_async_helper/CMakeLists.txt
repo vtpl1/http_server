@@ -9,6 +9,7 @@ add_library(http_server_async_helper
     src/http_server.cpp
     src/http_session.cpp
     src/server.cpp
+    src/websocket_session.cpp
     # src/connection_manager.cpp
 
     inc/http_server.h
@@ -16,6 +17,7 @@ add_library(http_server_async_helper
 
     inc/server.hpp
     inc/http_session.hpp
+    inc/websocket_session.hpp
     # inc/connection_manager.hpp
 )
 
