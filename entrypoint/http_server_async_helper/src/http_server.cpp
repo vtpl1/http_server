@@ -1,22 +1,8 @@
 // *****************************************************
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
-#include <Poco/File.h>
-#include <Poco/Path.h>
-#include <algorithm>
-
-#include <cstdlib>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <thread>
-#include <vector>
-
 #include "http_server.h"
-#include "pch.h"
-
-// #include "server_certificate.h"
+#include "pch_internal.h"
 
 constexpr int EXPIRES_AFTER_TIME_OUT = 30;
 constexpr int PARSER_BODY_LIMIT = 10000;
@@ -274,8 +260,9 @@ private:
 // The returned path is normalized for the platform.
 std::string path_cat(beast::string_view base, beast::string_view path)
 {
-  if (base.empty())
+  if (base.empty()) {
     return std::string(path);
+  }
   std::string result(base);
 #ifdef BOOST_MSVC
   char constexpr path_separator = '\\';
@@ -287,8 +274,9 @@ std::string path_cat(beast::string_view base, beast::string_view path)
       c = path_separator;
 #else
   char constexpr path_separator = '/';
-  if (result.back() == path_separator)
+  if (result.back() == path_separator) {
     result.resize(result.size() - 1);
+  }
   result.append(path.data(), path.size());
 #endif
   return result;

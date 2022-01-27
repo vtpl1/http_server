@@ -29,6 +29,8 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     libclang-common-$LLVM_VERSION-dev libclang-$LLVM_VERSION-dev \
     libclang-cpp$LLVM_VERSION-dev libunwind-$LLVM_VERSION-dev
 
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install ccache
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install clang-13 clang-tools-13 \
 #     libclang-common-13-dev libclang-13-dev libclang1-13 \

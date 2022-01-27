@@ -5,10 +5,20 @@
 #pragma once
 #ifndef pch_internal_h
 #define pch_internal_h
+#include <Poco/File.h>
+#include <Poco/Path.h>
+#include <algorithm>
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/strand.hpp>
+#include <cstdlib>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
 // #include <boost/beast/core.hpp>
 // #include <boost/beast/http.hpp>
 #include <boost/beast/ssl.hpp>
@@ -20,4 +30,4 @@
 #include <boost/optional.hpp>
 
 #include "logging.h"
-#endif	// pch_internal_h
+#endif // pch_internal_h
