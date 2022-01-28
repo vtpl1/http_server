@@ -19,5 +19,9 @@ target_link_libraries(utils
   PUBLIC spdlog::spdlog
 )
 
+target_precompile_headers(utils
+  PUBLIC    inc/logging.h
+)
+
 set_property(TARGET utils PROPERTY
   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

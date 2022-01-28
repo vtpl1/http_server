@@ -2,7 +2,6 @@
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
 
-#include <Poco/Net/NetException.h>
 #include <cereal/archives/binary.hpp>
 #include <sstream>
 
@@ -13,42 +12,39 @@
 #include "rpc_handler.h"
 #include "rpc_manager.h"
 
-constexpr int MAX_BUFFER_SIZE = 1024;
-constexpr int RECEIVE_TIMEOUT_MICRO_SEC = 500 * 1000;
-constexpr int PING_MINIMUM_INTERVAL_SEC = 10;
-constexpr int PING_PONG_GAP_SEC = 2;
 
-RpcHandler::RpcHandler(Poco::Net::WebSocket& web_socket, bool send_periodic_ping)
-    : _web_socket(web_socket), _send_periodic_ping(send_periodic_ping)
+RpcHandler::RpcHandler()
 {
-  _web_socket.setReceiveTimeout(
-      Poco::Timespan(0, RECEIVE_TIMEOUT_MICRO_SEC)); // Timespan(long seconds, long microseconds)
-  _web_socket.setMaxPayloadSize(MAX_BUFFER_SIZE);
-  _buffer.resize(MAX_BUFFER_SIZE);
 }
 
 bool RpcHandler::sendData(Poco::Net::WebSocket::FrameOpcodes flags)
 {
   std::vector<uint8_t> buffer;
-  return sendData(buffer, flags);
+  unsigned flag = 0;
+  flag |= flags;
+  flag |= Poco::Net::WebSocket::FRAME_FLAG_FIN;
+  // buffer.push_back(0);
+  return sendData(buffer, flag);
 }
 bool RpcHandler::sendData(std::vector<uint8_t>& buffer)
 {
-  return sendData(buffer, Poco::Net::WebSocket::FRAME_OP_BINARY);
+  unsigned flag = 0;
+  flag |= Poco::Net::WebSocket::FRAME_BINARY;
+  return sendData(buffer, flag);
 }
 
-bool RpcHandler::sendData(std::vector<uint8_t>& buffer, Poco::Net::WebSocket::FrameOpcodes flags)
+bool RpcHandler::sendData(std::vector<uint8_t>& buffer, unsigned flag)
 {
   // Poco::Net::WebSocket::FRAME_OP_PONG
-  RAY_LOG_INF << "Sent: " << buffer.size() << " , " << flags;
+  RAY_LOG_INF << "Sent: " << buffer.size() << " , " << flag;
   try {
-    int n = _web_socket.sendFrame(buffer.data(), static_cast<int>(buffer.size()), flags);
+    int n = _web_socket.sendFrame(buffer.data(), static_cast<int>(buffer.size()), static_cast<int>(flag));
     if (n != buffer.size()) {
       return false;
     }
-    _last_op_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::high_resolution_clock::now().time_since_epoch())
-                        .count();
+    _last_op_time =
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch())
+            .count();
   } catch (Poco::Net::NetException& e) {
     RAY_LOG_ERR << e.what();
     return false;
@@ -183,9 +179,9 @@ bool RpcHandler::processPingPong(int& flags)
     }
   }
   if (_send_periodic_ping) {
-    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                      std::chrono::high_resolution_clock::now().time_since_epoch())
-                      .count();
+    int64_t now =
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch())
+            .count();
     if ((now - _last_ping_time) >= PING_PONG_GAP_SEC) {
       if (!_pong_received) {
         RAY_LOG_ERR << "Pong not received on time";
@@ -193,9 +189,9 @@ bool RpcHandler::processPingPong(int& flags)
       }
     }
     if ((now - _last_op_time) >= PING_MINIMUM_INTERVAL_SEC) {
-      _last_ping_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                            std::chrono::high_resolution_clock::now().time_since_epoch())
-                            .count();
+      _last_ping_time =
+          std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch())
+              .count();
       _pong_received = false;
       return sendData(Poco::Net::WebSocket::FRAME_OP_PING);
     }

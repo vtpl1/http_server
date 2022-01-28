@@ -29,6 +29,8 @@ target_link_libraries(controllers
     PRIVATE utils
     PUBLIC datamodels
     PUBLIC http_server_helper
+    PUBLIC web_socket_send_receive_helper
+    PUBLIC rpc_handler
     PRIVATE Poco::Foundation
     PRIVATE yaml-cpp
 )

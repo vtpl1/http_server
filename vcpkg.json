@@ -12,6 +12,8 @@
         "protobuf",
         "cereal",
         "yaml-cpp",
-        "catch2"
+        "catch2",
+        "boost-beast",
+        "openssl"
     ]
 }

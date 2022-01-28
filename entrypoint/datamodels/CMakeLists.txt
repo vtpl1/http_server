@@ -44,5 +44,12 @@ target_link_libraries(datamodels
     PUBLIC cereal
 )
 
+target_precompile_headers(datamodels
+    PUBLIC inc/job.h
+    PUBLIC inc/status.h
+    PUBLIC inc/media_command.h
+    PUBLIC inc/job_media_command_map.h
+)
+
 set_property(TARGET datamodels PROPERTY
   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
