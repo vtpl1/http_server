@@ -16,6 +16,7 @@
 #include "command_receiver.h"
 #include "logging.h"
 // #include "rpc_handler.h"
+#include "rpc_manager.h"
 #include "web_socket_send_receive_helper.h"
 
 CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm)
@@ -137,6 +138,17 @@ void CommandReceiver::run()
         int n = 0;
         if (!web_socket_send_receive_helper.readDataAndprocessPingPong(n)) {
           break;
+        }
+        if (n > 0) {
+          std::vector<uint8_t> valid_buffer;
+          std::vector<uint8_t> buffer = web_socket_send_receive_helper.get_buffer();
+          copy(buffer.begin(), buffer.end(), back_inserter(valid_buffer));
+          RpcManager::put_request_buffer(valid_buffer);
+        }
+
+        std::vector<uint8_t> buf = RpcManager::get_send_buffer();
+        if (!buf.empty()) {
+          web_socket_send_receive_helper.sendData(buf);
         }
       }
       try {

@@ -2,17 +2,116 @@
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
 #include <algorithm>
+#include <cereal/archives/binary.hpp>
 
 #include "job_list_manager.h"
 #include "logging.h"
+#include "rpc_manager.h"
 
+JobListManager::JobListManager()
+{
+  RpcManager::register_function("add_job", [this](const std::vector<uint8_t>& arg) {
+    Job job;
+    {
+      int n = arg.size();
+      std::stringstream ss;
+      std::copy(arg.begin(), arg.begin() + n, std::ostream_iterator<uint8_t>(ss));
+      {
+        cereal::BinaryInputArchive iarchive(ss);
+        iarchive >> job;
+      }
+    }
+    add_job(job);
+    std::vector<uint8_t> ret;
+    RpcManager::call_remote_function("on_add_job_return", ret);
+  });
+
+  RpcManager::register_function("on_add_job_return", [this](const std::vector<uint8_t>& ret) {});
+
+  RpcManager::register_function("delete_job", [this](const std::vector<uint8_t>& arg) {
+    Job job;
+    {
+      int n = arg.size();
+      std::stringstream ss;
+      std::copy(arg.begin(), arg.begin() + n, std::ostream_iterator<uint8_t>(ss));
+      {
+        cereal::BinaryInputArchive iarchive(ss);
+        iarchive >> job;
+      }
+    }
+    delete_job(job);
+    std::vector<uint8_t> ret;
+    RpcManager::call_remote_function("on_delete_job_return", ret);
+  });
+
+  RpcManager::register_function("on_delete_job_return", [this](const std::vector<uint8_t>& ret) {});
+
+  RpcManager::register_function("update_job_list", [this](const std::vector<uint8_t>& arg) {
+    JobList job_list;
+    {
+      int n = arg.size();
+      std::stringstream ss;
+      std::copy(arg.begin(), arg.begin() + n, std::ostream_iterator<uint8_t>(ss));
+      {
+        cereal::BinaryInputArchive iarchive(ss);
+        iarchive >> job_list;
+      }
+    }
+    update_job_list(job_list);
+    std::vector<uint8_t> ret;
+    RpcManager::call_remote_function("on_update_job_list_return", ret);
+  });
+
+  RpcManager::register_function("on_update_job_list_return", [this](const std::vector<uint8_t>& ret) {});
+
+  RpcManager::register_function("clear_job_list", [this](const std::vector<uint8_t>& arg) {
+    clear_job_list();
+    std::vector<uint8_t> ret;
+    RpcManager::call_remote_function("on_clear_job_list_return", ret);
+  });
+
+  RpcManager::register_function("on_clear_job_list_return", [this](const std::vector<uint8_t>& ret) {});
+
+  RpcManager::register_function("get_jobs", [this](const std::vector<uint8_t>& arg) {
+    std::vector<Job> ret1 = get_jobs();
+    std::vector<uint8_t> ret;
+    {
+      std::stringstream ss;
+      {
+        cereal::BinaryOutputArchive oarchive(ss);
+        oarchive << CEREAL_NVP(ret1);
+      }
+      std::string s = ss.str();
+      std::copy(s.begin(), s.end(), std::back_inserter(ret));
+    }
+    RpcManager::call_remote_function("on_get_jobs_return", ret);
+  });
+
+  RpcManager::register_function("on_get_jobs_return", [this](const std::vector<uint8_t>& ret) {
+    JobList job_list;
+    update_job_list(job_list);
+  });
+}
 JobListManager& JobListManager::get_instance()
 {
   static JobListManager instance;
   return instance;
 }
 JobListManager::~JobListManager() { stop(); }
-void JobListManager::start() { _thread = std::make_unique<std::thread>(&JobListManager::run, this); }
+
+void JobListManager::start(bool set_server_mode)
+{
+  get_instance()._is_server_mode = set_server_mode;
+  get_instance().start_();
+}
+void JobListManager::start_()
+{
+
+  if (!_is_server_mode) {
+    get_remote_jobs();
+  }
+  //_thread = std::make_unique<std::thread>(&JobListManager::run, this);
+}
 void JobListManager::signal_to_stop() { _do_shutdown = true; }
 void JobListManager::stop()
 {
@@ -43,12 +142,18 @@ void JobListManager::update_job_list(const JobList& job_list)
   for (auto&& j : job_list.job_list) {
     add_job(Job(j.channel_id));
   }
+  if (_is_server_mode) {
+    update_remote_job_list(job_list);
+  }
 }
 
 void JobListManager::clear_job_list()
 {
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   _jobs.clear();
+  if (_is_server_mode) {
+    clear_remote_job_list();
+  }
 }
 
 void JobListManager::add_job(const Job& job)
@@ -57,6 +162,9 @@ void JobListManager::add_job(const Job& job)
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   if (std::find(_jobs.begin(), _jobs.end(), job) == _jobs.end()) {
     _jobs.emplace_back(job);
+    if (_is_server_mode) {
+      add_remote_job(job);
+    }
   }
 }
 void JobListManager::delete_job(const Job& job)
@@ -65,6 +173,9 @@ void JobListManager::delete_job(const Job& job)
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   auto it = std::find(_jobs.begin(), _jobs.end(), job);
   if (it != _jobs.end()) {
+    if (_is_server_mode) {
+      delete_remote_job(*it);
+    }
     _jobs.erase(it);
   }
 }
@@ -130,4 +241,57 @@ std::vector<Job> JobListManager::get_extra_running_jobs()
     }
   }
   return extra_running_jobs;
+}
+
+void JobListManager::add_remote_job(const Job& job)
+{
+  std::vector<uint8_t> args;
+  {
+    std::stringstream ss;
+    {
+      cereal::BinaryOutputArchive oarchive(ss);
+      oarchive << CEREAL_NVP(job);
+    }
+    std::string s = ss.str();
+    std::copy(s.begin(), s.end(), std::back_inserter(args));
+  }
+  RpcManager::call_remote_function("add_job", args);
+}
+void JobListManager::update_remote_job_list(const JobList& job_list)
+{
+  std::vector<uint8_t> args;
+  {
+    std::stringstream ss;
+    {
+      cereal::BinaryOutputArchive oarchive(ss);
+      oarchive << CEREAL_NVP(job_list);
+    }
+    std::string s = ss.str();
+    std::copy(s.begin(), s.end(), std::back_inserter(args));
+  }
+  RpcManager::call_remote_function("update_job_list", args);
+}
+void JobListManager::clear_remote_job_list()
+{
+  std::vector<uint8_t> args;
+  RpcManager::call_remote_function("clear_job_list", args);
+}
+void JobListManager::delete_remote_job(const Job& job)
+{
+  std::vector<uint8_t> args;
+  {
+    std::stringstream ss;
+    {
+      cereal::BinaryOutputArchive oarchive(ss);
+      oarchive << CEREAL_NVP(job);
+    }
+    std::string s = ss.str();
+    std::copy(s.begin(), s.end(), std::back_inserter(args));
+  }
+  RpcManager::call_remote_function("delete_job", args);
+}
+void JobListManager::get_remote_jobs()
+{
+  std::vector<uint8_t> args;
+  RpcManager::call_remote_function("get_jobs", args);
 }

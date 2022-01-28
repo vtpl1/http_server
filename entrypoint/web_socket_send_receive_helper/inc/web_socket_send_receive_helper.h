@@ -28,6 +28,7 @@ public:
   ~WebSocketSendReceiveHelper() = default;
   bool readDataAndprocessPingPong(int& n);
   bool sendData(std::vector<uint8_t>& buffer);
+  std::vector<uint8_t> get_buffer();
 };
 
 #endif	// web_socket_send_receive_helper_h
