@@ -120,3 +120,5 @@ bool WebSocketSendReceiveHelper::readDataAndprocessPingPong(int& n)
   }
   return true;
 }
+
+std::vector<uint8_t> WebSocketSendReceiveHelper::get_buffer() { return _buffer; }

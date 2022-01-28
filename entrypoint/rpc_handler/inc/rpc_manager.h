@@ -12,11 +12,12 @@
 #include <queue>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 #include "function_request_data.h"
 #include "function_response_data.h"
 
-using FunctionCallbackHandler = std::function<std::vector<uint8_t>(const std::vector<uint8_t>&)>;
+using FunctionCallbackHandler = std::function<void(const std::vector<uint8_t>&)>;
 
 class RpcManager
 {
@@ -27,12 +28,11 @@ private:
   inline bool _do_shutdown_composite() { return (_do_shutdown || _is_internal_shutdown); }
 
   std::unique_ptr<std::thread> _thread;
-  std::queue<FunctionRequestData> _request_q;
-  std::queue<FunctionResponseData> _response_q;
   std::map<std::string, FunctionCallbackHandler> _function_callback_map;
-
-  std::queue<FunctionRequestData> _remote_request_q;
-  std::queue<FunctionResponseData> _remote_response_q;
+  std::queue<std::vector<uint8_t>> _send_q;
+  std::queue<std::vector<uint8_t>> _receive_q;
+  std::mutex _send_q_mutex;
+  std::mutex _receive_q_mutex;
   RpcManager();
   void start();
   void signal_to_stop();
@@ -42,13 +42,12 @@ private:
 
 public:
   ~RpcManager();
-  static void register_callback_function();
-  static void call_function(const std::string& func_name, const std::vector<uint8_t>& args);
-  static void call_reponse(const std::string& func_name, const std::vector<uint8_t>& args);
+
+  static void register_function(const std::string& func_name, FunctionCallbackHandler);
   static void call_remote_function(const std::string& func_name, const std::vector<uint8_t>& args);
-  static void call_remote_reponse(const std::string& func_name, const std::vector<uint8_t>& args);
-  static std::unique_ptr<FunctionRequestData> get_remote_callable_function();
-  static std::unique_ptr<FunctionResponseData> get_remote_callable_response();
+
+  static std::vector<uint8_t> get_send_buffer();
+  static void put_request_buffer(const std::vector<uint8_t>& buf);
 
 };
 
