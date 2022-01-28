@@ -5,7 +5,10 @@
 #pragma once
 #ifndef server_hpp
 #define server_hpp
-#include "pch.h"
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
+
+#include "http_server_data_models.h"
 
 namespace http
 {
@@ -52,6 +55,7 @@ private:
 
   /// The handler for all incoming requests.
   //   RequestHandler request_handler_;
+  static void fail(boost::beast::error_code ec, char const* what);
 };
 
 } // namespace server

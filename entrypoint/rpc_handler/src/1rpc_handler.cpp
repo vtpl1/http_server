@@ -2,7 +2,6 @@
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
 
-#include <Poco/Net/NetException.h>
 #include <cereal/archives/binary.hpp>
 #include <sstream>
 
@@ -13,18 +12,9 @@
 #include "rpc_handler.h"
 #include "rpc_manager.h"
 
-constexpr int MAX_BUFFER_SIZE = 1024;
-constexpr int RECEIVE_TIMEOUT_MICRO_SEC = 500 * 1000;
-constexpr int PING_MINIMUM_INTERVAL_SEC = 10;
-constexpr int PING_PONG_GAP_SEC = 2;
 
-RpcHandler::RpcHandler(Poco::Net::WebSocket& web_socket, bool send_periodic_ping)
-    : _web_socket(web_socket), _send_periodic_ping(send_periodic_ping)
+RpcHandler::RpcHandler()
 {
-  _web_socket.setReceiveTimeout(
-      Poco::Timespan(0, RECEIVE_TIMEOUT_MICRO_SEC)); // Timespan(long seconds, long microseconds)
-  _web_socket.setMaxPayloadSize(MAX_BUFFER_SIZE);
-  _buffer.resize(MAX_BUFFER_SIZE);
 }
 
 bool RpcHandler::sendData(Poco::Net::WebSocket::FrameOpcodes flags)

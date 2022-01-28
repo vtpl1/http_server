@@ -25,6 +25,7 @@ void Server::signal_to_stop()
 {
   boost::asio::post(io_context_, [this]() { acceptor_.close(); });
   io_context_.stop();
+  RAY_LOG_INF << "IO context stop sent";
 }
 void Server::stop() { signal_to_stop(); }
 void Server::run()
@@ -36,6 +37,15 @@ void Server::run()
   // for new incoming connections.
   io_context_.run();
 }
+void Server::fail(boost::beast::error_code ec, char const* what)
+{
+  // Don't report on canceled operations
+  if (ec == boost::beast::net::error::operation_aborted) {
+    return;
+  }
+
+  std::cerr << what << ": " << ec.message() << "\n";
+}
 void Server::do_accept()
 {
   acceptor_.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
@@ -46,9 +56,11 @@ void Server::do_accept()
     }
     std::cout << "Connection received" << std::endl;
 
-    if (!ec) {
-      std::make_shared<HttpSession>(std::move(socket), doc_roots_)->run();
+    if (ec) {
+      return fail(ec, "accept");
     }
+
+    std::make_shared<HttpSession>(std::move(socket), doc_roots_)->run();
 
     do_accept();
   });

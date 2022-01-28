@@ -5,9 +5,15 @@
 #pragma once
 #ifndef http_session_hpp
 #define http_session_hpp
-#include "pch.h"
+#include <boost/asio.hpp>
 #include <boost/beast.hpp>
-// #include "pch_internal.h"
+#include <functional>
+#include <map>
+#include <memory>
+#include <string>
+
+#include "http_server_data_models.h"
+
 namespace http
 {
 namespace server

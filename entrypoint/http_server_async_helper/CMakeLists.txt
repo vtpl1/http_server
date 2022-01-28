@@ -22,8 +22,8 @@ add_library(http_server_async_helper
 )
 
 target_precompile_headers(http_server_async_helper
-  PUBLIC    inc/pch.h
-  PRIVATE   inc/pch_internal.h
+  PUBLIC    <boost/asio.hpp>
+  PRIVATE   <boost/beast.hpp>
 )
 if (MSVC)
 target_compile_options(http_server_async_helper

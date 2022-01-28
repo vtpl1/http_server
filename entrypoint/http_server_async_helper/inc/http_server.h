@@ -6,7 +6,6 @@
 #ifndef http_server_h
 #define http_server_h
 #include "http_server_data_models.h"
-#include "pch.h"
 #include "server.hpp"
 
 class HttpServer

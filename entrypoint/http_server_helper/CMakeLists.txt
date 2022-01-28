@@ -34,7 +34,8 @@ target_include_directories(http_server_helper
 
 target_link_libraries(http_server_helper
     PRIVATE utils
-    PUBLIC rpc_handler
+    # PUBLIC rpc_handler
+    PRIVATE web_socket_send_receive_helper
     PRIVATE Poco::Foundation
     PRIVATE Poco::Net
 )

@@ -5,8 +5,14 @@
 #pragma once
 #ifndef websocket_session_hpp
 #define websocket_session_hpp
-#include "pch.h"
+#include <boost/asio.hpp>
 #include <boost/beast.hpp>
+#include <functional>
+#include <map>
+#include <memory>
+#include <string>
+
+#include "http_server_data_models.h"
 
 class WebsocketSession : public std::enable_shared_from_this<WebsocketSession>
 {
