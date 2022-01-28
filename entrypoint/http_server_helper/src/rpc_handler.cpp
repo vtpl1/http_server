@@ -124,6 +124,7 @@ bool RpcHandler::processDataToSend()
 {
   bool is_continue = false;
   do {
+    is_continue = false;
     std::unique_ptr<FunctionRequestData> function_request_data = RpcManager::get_remote_callable_request();
     std::vector<uint8_t> send_buffer;
     FunctionRequestOrResponseData function_request_or_response_data;
