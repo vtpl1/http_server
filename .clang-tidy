@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-llvmlibc-*,-fuchsia-default-arguments-calls,-altera-unroll-loops,-modernize-use-trailing-return-type,-bugprone-easily-swappable-parameters'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-llvmlibc-*,-fuchsia-default-arguments-calls,-altera-unroll-loops,-modernize-use-trailing-return-type,-bugprone-easily-swappable-parameters,-misc-no-recursion'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

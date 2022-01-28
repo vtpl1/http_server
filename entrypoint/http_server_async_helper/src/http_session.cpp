@@ -1,9 +1,10 @@
 // *****************************************************
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
+#include <iostream>
 
 #include "http_session.hpp"
-#include <iostream>
+#include "websocket_session.hpp"
 
 namespace http
 {
@@ -292,12 +293,13 @@ void HttpSession::on_read(boost::beast::error_code ec, std::size_t bytes_transfe
     return fail(ec, "read");
   }
 
-  //   // See if it is a WebSocket Upgrade
-  //   if (boost::beast::websocket::is_upgrade(req_)) {
-  //     // Create a WebSocket session by transferring the socket
-  //     std::make_shared<websocket_session>(std::move(socket_), state_)->run(std::move(req_));
-  //     return;
-  //   }
+  // See if it is a WebSocket Upgrade
+  if (boost::beast::websocket::is_upgrade(req_)) {
+    // Create a WebSocket session by transferring the socket
+    //undefined reference to `void WebsocketSession::run<boost::beast::http::basic_string_body<char, std::char_traits<char>, std::allocator<char> >, std::allocator<char> >(boost::beast::http::message<true, boost::beast::http::basic_string_body<char, std::char_traits<char>, std::allocator<char> >, boost::beast::http::basic_fields<std::allocator<char> > >)'
+    std::make_shared<WebsocketSession>(std::move(socket_), doc_roots_)->run(std::move(req_));
+    return;
+  }
 
   // Send the response
   handle_request(doc_roots_, std::move(req_), [this](auto&& response) {
@@ -307,7 +309,7 @@ void HttpSession::on_read(boost::beast::error_code ec, std::size_t bytes_transfe
     using response_type = typename std::decay<decltype(response)>::type;
     auto sp = std::make_shared<response_type>(std::forward<decltype(response)>(response));
 
-#if 0
+#if 1
     // NOTE This causes an ICE in gcc 7.3
     // Write the response
     boost::beast::http::async_write(this->socket_, *sp,

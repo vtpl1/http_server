@@ -31,7 +31,7 @@ private:
 
   DocRoots& doc_roots_;
 
-  void fail(boost::beast::error_code ec, char const* what);
+  static void fail(boost::beast::error_code ec, char const* what);
   void do_read();
   void on_read(boost::beast::error_code ec, std::size_t bytes_transferred);
   void on_write(boost::beast::error_code ec, std::size_t bytes_transferred, bool close);

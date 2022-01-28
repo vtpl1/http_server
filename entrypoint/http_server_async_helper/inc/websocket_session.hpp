@@ -17,7 +17,11 @@ public:
   explicit WebsocketSession(boost::asio::ip::tcp::socket socket, DocRoots& doc_roots);
 
   template <class Body, class Allocator>
-  void run(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>> req);
+  void run(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>&& req)
+  {
+    // Accept the websocket handshake
+    socket_.async_accept(req, [self = shared_from_this()](boost::beast::error_code ec) { self->on_accept(ec); });
+  }
 
 private:
   boost::beast::websocket::stream<boost::asio::ip::tcp::socket> socket_;
@@ -28,7 +32,7 @@ private:
 
   DocRoots& doc_roots_;
 
-  void fail(boost::beast::error_code ec, char const* what);
+  static void fail(boost::beast::error_code ec, char const* what);
   void do_read();
   void on_accept(boost::beast::error_code ec);
   void on_read(boost::beast::error_code ec, std::size_t bytes_transferred);

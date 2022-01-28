@@ -24,12 +24,6 @@ void WebsocketSession::do_read()
     self->on_read(ec, bytes);
   });
 }
-template <class Body, class Allocator>
-void WebsocketSession::run(boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>> req)
-{
-  // Accept the websocket handshake
-  socket_.async_accept(req, std::bind(&WebsocketSession::on_accept, shared_from_this(), std::placeholders::_1));
-}
 void WebsocketSession::on_accept(boost::beast::error_code ec)
 {
   // Handle the error, if any
@@ -62,5 +56,4 @@ void WebsocketSession::on_write(boost::beast::error_code ec, std::size_t bytes_t
   if (ec) {
     return fail(ec, "write");
   }
-
 }
