@@ -10,7 +10,7 @@
 #include "end_point_manager.h"
 #include "logging.h"
 
-constexpr int CHANNEL_REQ_EXP_TIME_MILI_SEC = 10 * 1000;
+constexpr int CHANNEL_REQ_EXP_TIME_MILLISEC = 30 * 1000;
 
 // https://streaming.videonetics.com/live/hls/33E2C658-8F16-408A-8523-AAD5F41CB67A_HLS_SERVER_MI/play.m3u8
 //  /live/hls/{stream_id}/play.m3u8
@@ -41,6 +41,7 @@ void EndPointManager::stop()
     }
   }
 }
+
 void EndPointManager::on_url_call_back_event(const std::string& req_url)
 {
   // std::regex rgx(".*videos\\/(\\d+)\\/play\\.m3u8.*");
@@ -65,26 +66,7 @@ void EndPointManager::on_url_call_back_event(const std::string& req_url)
     }
   }
 }
-void EndPointManager::on_status_call_back_event(const std::vector<uint8_t>& data)
-{
-  if (!data.empty()) {
-    RAY_LOG_INF << "Status received ";
-  }
-}
-std::vector<uint8_t> EndPointManager::on_command_call_back_event(const std::string& req_url)
-{
-  std::vector<uint8_t> ret_buffer;
-  JobList job_list(_jlm.get_jobs());
-  std::stringstream ss;
-  {
-    cereal::BinaryOutputArchive oarchive(ss);
-    oarchive << CEREAL_NVP(job_list);
-  }
-  std::string s = ss.str();
-  std::copy(s.begin(), s.end(), std::back_inserter(ret_buffer));
 
-  return ret_buffer;
-}
 void EndPointManager::run()
 {
   _svr = std::make_unique<HttpServer>(_server_port);
@@ -126,8 +108,9 @@ void EndPointManager::run()
   while (!_do_shutdown_composite()) {
     std::vector<std::string> temp;
     for (auto&& it : _last_access_time_map) {
-      if (((std::chrono::high_resolution_clock::now().time_since_epoch()).count() - it.second) >
-          CHANNEL_REQ_EXP_TIME_MILI_SEC) {
+      if ((std::chrono::duration_cast<std::chrono::milliseconds>(
+                         std::chrono::high_resolution_clock::now().time_since_epoch())
+                         .count() - it.second) > CHANNEL_REQ_EXP_TIME_MILLISEC) {
         std::string channel_id = it.first;
         _jlm.delete_job(Job(channel_id));
         temp.push_back(channel_id);

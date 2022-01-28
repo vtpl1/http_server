@@ -7,9 +7,9 @@
 #define job_list_manager_h
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <vector>
-#include <mutex>
 
 #include "job.h"
 

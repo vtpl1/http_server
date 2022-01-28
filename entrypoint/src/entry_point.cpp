@@ -44,7 +44,6 @@ private:
   // static std::atomic_bool do_shutdown;
 
 public:
-
   EntryPoint() { setUnixOptions(true); }
   void initialize(Application& self) override
   {
@@ -193,8 +192,8 @@ public:
       {
         JobToMediaCommandMapper::set_base_dir(get_session_folder());
         JobToMediaCommandMapper::set_file_name("server.yaml");
-        std::unique_ptr<EndPointManager> epm = std::make_unique<EndPointManager>(
-            JobListManager::get_instance(), config().getString("system.currentDir"), server_port);
+        std::unique_ptr<EndPointManager> epm =
+            std::make_unique<EndPointManager>(JobListManager::get_instance(), config().getString("system.currentDir"), server_port);
         std::unique_ptr<PipelineManager> plm =
             std::make_unique<PipelineManager>(JobListManager::get_instance(), config().getString("system.currentDir"));
         epm->start();
@@ -239,7 +238,6 @@ public:
   // To run the rtsp to rtmp
   // .\build\entrypoint\Debug\media_converter.exe -i rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/ -o
   // rtmp://localhost:9001
-
 };
 
 // std::atomic_bool EntryPoint::do_shutdown{false};

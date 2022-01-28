@@ -25,6 +25,7 @@ RpcHandler::RpcHandler(Poco::Net::WebSocket& web_socket, bool send_periodic_ping
       Poco::Timespan(0, RECEIVE_TIMEOUT_MICRO_SEC)); // Timespan(long seconds, long microseconds)
   _web_socket.setMaxPayloadSize(MAX_BUFFER_SIZE);
   _buffer.resize(MAX_BUFFER_SIZE);
+  RpcManager::get_instance().register_callback_function();
 }
 
 bool RpcHandler::sendData(Poco::Net::WebSocket::FrameOpcodes flags)
@@ -32,6 +33,7 @@ bool RpcHandler::sendData(Poco::Net::WebSocket::FrameOpcodes flags)
   std::vector<uint8_t> buffer;
   return sendData(buffer, flags);
 }
+
 bool RpcHandler::sendData(std::vector<uint8_t>& buffer)
 {
   return sendData(buffer, Poco::Net::WebSocket::FRAME_OP_BINARY);
@@ -55,6 +57,7 @@ bool RpcHandler::sendData(std::vector<uint8_t>& buffer, Poco::Net::WebSocket::Fr
   }
   return true;
 }
+
 bool RpcHandler::readData(int& n, int& flags)
 {
   bool is_timeout = false;
@@ -73,6 +76,7 @@ bool RpcHandler::readData(int& n, int& flags)
   }
   return !((n == 0) && (flags == 0) && !is_timeout);
 }
+
 bool RpcHandler::processRecivedData(int n)
 {
   FunctionRequestOrResponseData function_request_or_response_data;
@@ -96,7 +100,7 @@ bool RpcHandler::processRecivedData(int n)
         iarchive >> req;
       }
     }
-    RpcManager::call_function(req.func_name, req.args);
+    RpcManager::call_request(req.func_name, req.args);
   } else if (function_request_or_response_data.request_or_response ==
              FunctionRequestOrResponseData::RequestOrResponse::RESPONSE) {
     FunctionResponseData req;
@@ -109,17 +113,18 @@ bool RpcHandler::processRecivedData(int n)
         iarchive >> req;
       }
     }
-    RpcManager::call_reponse(req.func_name, req.ret);
+    RpcManager::call_response(req.func_name, req.ret);
   } else {
-    RAY_LOG_ERR << "Unexpected";
+    RAY_LOG_ERR << "Neither REQUEST Nor RESPONSE...";
   }
   return true;
 }
+
 bool RpcHandler::processDataToSend()
 {
   bool is_continue = false;
   do {
-    std::unique_ptr<FunctionRequestData> function_request_data = RpcManager::get_remote_callable_function();
+    std::unique_ptr<FunctionRequestData> function_request_data = RpcManager::get_remote_callable_request();
     std::vector<uint8_t> send_buffer;
     FunctionRequestOrResponseData function_request_or_response_data;
 
@@ -165,6 +170,7 @@ bool RpcHandler::processDataToSend()
 
   return true;
 }
+
 bool RpcHandler::processPingPong(int& flags)
 {
   auto ui_flags = static_cast<unsigned int>(flags);
@@ -202,6 +208,7 @@ bool RpcHandler::processPingPong(int& flags)
   }
   return true;
 }
+
 bool RpcHandler::do_next()
 {
   int n = 0;

@@ -16,6 +16,7 @@
 #include "command_receiver.h"
 #include "logging.h"
 #include "rpc_handler.h"
+#include "rpc_manager.h"
 
 CommandReceiver::CommandReceiver(std::string host, int port, JobListManager& jlm)
     : _host(std::move(host)), _port(port), _jlm(jlm)
@@ -132,6 +133,8 @@ void CommandReceiver::run()
       Poco::Net::WebSocket ws(cs, request, response);
       RAY_LOG_INF << "WebSocket connection established.";
       RpcHandler rpc_handler(ws, true);
+      RpcManager::get_instance().get_all_jobs();
+
       while (!_do_shutdown_composite()) {
         if (!rpc_handler.do_next()) {
           break;

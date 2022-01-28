@@ -48,6 +48,7 @@ target_link_libraries(http_server_helper
     PRIVATE utils
     PRIVATE Poco::Foundation
     PRIVATE Poco::Net
+    PRIVATE controllers
 )
 
 set_property(TARGET http_server_helper PROPERTY

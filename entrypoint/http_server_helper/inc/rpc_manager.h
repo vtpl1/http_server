@@ -15,6 +15,7 @@
 
 #include "function_request_data.h"
 #include "function_response_data.h"
+#include "job_list_manager.h"
 
 using FunctionCallbackHandler = std::function<std::vector<uint8_t>(const std::vector<uint8_t>&)>;
 
@@ -38,18 +39,20 @@ private:
   void signal_to_stop();
   void stop();
   void run();
-  static RpcManager& get_instance();
+
 
 public:
   ~RpcManager();
+  static RpcManager& get_instance();
   static void register_callback_function();
-  static void call_function(const std::string& func_name, const std::vector<uint8_t>& args);
-  static void call_reponse(const std::string& func_name, const std::vector<uint8_t>& args);
-  static void call_remote_function(const std::string& func_name, const std::vector<uint8_t>& args);
-  static void call_remote_reponse(const std::string& func_name, const std::vector<uint8_t>& args);
-  static std::unique_ptr<FunctionRequestData> get_remote_callable_function();
+  static void call_request(const std::string& func_name, const std::vector<uint8_t>& args);
+  static void call_response(const std::string& func_name, const std::vector<uint8_t>& args);
+  static void call_remote_request(const std::string& func_name, const std::vector<uint8_t>& args);
+  static void call_remote_response(const std::string& func_name, const std::vector<uint8_t>& args);
+  static std::unique_ptr<FunctionRequestData> get_remote_callable_request();
   static std::unique_ptr<FunctionResponseData> get_remote_callable_response();
-
+  static void get_all_jobs();
+  static void response_to_get_all_jobs();
 };
 
 #endif // rpc_manager_h
