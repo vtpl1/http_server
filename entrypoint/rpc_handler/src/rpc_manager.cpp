@@ -68,8 +68,12 @@ void RpcManager::call_remote_function(const std::string& func_name)
 }
 void RpcManager::call_remote_function(const std::string& func_name, std::shared_ptr<std::vector<uint8_t>> args)
 {
-  std::shared_ptr<std::vector<uint8_t>> buffer =
-      put_obj<FunctionRequestData>(FunctionRequestData(func_name, *std::move(args)));
+  std::shared_ptr<std::vector<uint8_t>> buffer;
+  if (args == nullptr) {
+    buffer = put_obj<FunctionRequestData>(FunctionRequestData(func_name, std::vector<uint8_t>()));
+  } else {
+    buffer = put_obj<FunctionRequestData>(FunctionRequestData(func_name, *std::move(args)));
+  }
   std::lock_guard<std::mutex> lock(get_instance()._send_q_mutex);
   get_instance()._send_q.emplace(buffer);
 }
