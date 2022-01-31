@@ -7,17 +7,30 @@
 #define rpc_manager_h
 
 #include <atomic>
+#include <cereal/archives/binary.hpp>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <queue>
+#include <strstream>
 #include <thread>
 #include <vector>
-#include <mutex>
 
 #include "function_request_data.h"
 #include "function_response_data.h"
 
 using FunctionCallbackHandler = std::function<void(const std::vector<uint8_t>&)>;
+
+template <class T> T&& get_obj(const std::vector<uint8_t>& data)
+{
+  std::istrstream ss(reinterpret_cast<const char*>(data.data()), data.size());
+  T obj;
+  {
+    cereal::BinaryInputArchive iarchive(ss);
+    iarchive >> obj;
+  }
+  return std::move(obj);
+}
 
 class RpcManager
 {
@@ -48,7 +61,6 @@ public:
 
   static std::vector<uint8_t> get_send_buffer();
   static void put_request_buffer(const std::vector<uint8_t>& buf);
-
 };
 
 #endif // rpc_manager_h

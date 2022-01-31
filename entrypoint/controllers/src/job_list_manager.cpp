@@ -3,6 +3,7 @@
 // *****************************************************
 #include <algorithm>
 #include <cereal/archives/binary.hpp>
+#include <strstream>
 
 #include "job_list_manager.h"
 #include "logging.h"
@@ -11,17 +12,17 @@
 JobListManager::JobListManager()
 {
   RpcManager::register_function("add_job", [this](const std::vector<uint8_t>& arg) {
-    Job job;
-    {
-      int n = arg.size();
-      std::stringstream ss;
-      std::copy(arg.begin(), arg.begin() + n, std::ostream_iterator<uint8_t>(ss));
-      {
-        cereal::BinaryInputArchive iarchive(ss);
-        iarchive >> job;
-      }
-    }
-    add_job(job);
+    // Job job = get_obj<Job>(arg);
+    //  {
+    //    int n = arg.size();
+    //    std::stringstream ss;
+    //    std::copy(arg.begin(), arg.begin() + n, std::ostream_iterator<uint8_t>(ss));
+    //    {
+    //      cereal::BinaryInputArchive iarchive(ss);
+    //      iarchive >> job;
+    //    }
+    //  }
+    add_job(get_obj<Job>(arg));
     std::vector<uint8_t> ret;
     RpcManager::call_remote_function("on_add_job_return", ret);
   });
