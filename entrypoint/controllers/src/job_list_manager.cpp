@@ -3,7 +3,6 @@
 // *****************************************************
 #include <algorithm>
 #include <cereal/archives/binary.hpp>
-#include <strstream>
 
 #include "job_list_manager.h"
 #include "logging.h"
@@ -11,86 +10,41 @@
 
 JobListManager::JobListManager()
 {
-  RpcManager::register_function("add_job", [this](const std::vector<uint8_t>& arg) {
-    // Job job = get_obj<Job>(arg);
-    //  {
-    //    int n = arg.size();
-    //    std::stringstream ss;
-    //    std::copy(arg.begin(), arg.begin() + n, std::ostream_iterator<uint8_t>(ss));
-    //    {
-    //      cereal::BinaryInputArchive iarchive(ss);
-    //      iarchive >> job;
-    //    }
-    //  }
-    add_job(get_obj<Job>(arg));
-    std::vector<uint8_t> ret;
-    RpcManager::call_remote_function("on_add_job_return", ret);
+  RpcManager::register_function("add_job", [this](std::shared_ptr<std::vector<uint8_t>> arg) {
+    add_job(*get_obj<Job>(std::move(arg)));
+    RpcManager::call_remote_function("on_add_job_return");
   });
 
-  RpcManager::register_function("on_add_job_return", [this](const std::vector<uint8_t>& ret) {});
+  RpcManager::register_function("on_add_job_return", [this](std::shared_ptr<std::vector<uint8_t>>  /*ret*/) {});
 
-  RpcManager::register_function("delete_job", [this](const std::vector<uint8_t>& arg) {
-    Job job;
-    {
-      int n = arg.size();
-      std::stringstream ss;
-      std::copy(arg.begin(), arg.begin() + n, std::ostream_iterator<uint8_t>(ss));
-      {
-        cereal::BinaryInputArchive iarchive(ss);
-        iarchive >> job;
-      }
-    }
-    delete_job(job);
-    std::vector<uint8_t> ret;
-    RpcManager::call_remote_function("on_delete_job_return", ret);
+  RpcManager::register_function("delete_job", [this](std::shared_ptr<std::vector<uint8_t>>  arg) {
+    delete_job(*get_obj<Job>(std::move(arg)));
+    RpcManager::call_remote_function("on_delete_job_return");
   });
 
-  RpcManager::register_function("on_delete_job_return", [this](const std::vector<uint8_t>& ret) {});
+  RpcManager::register_function("on_delete_job_return", [this](std::shared_ptr<std::vector<uint8_t>> /*ret*/) {});
 
-  RpcManager::register_function("update_job_list", [this](const std::vector<uint8_t>& arg) {
-    JobList job_list;
-    {
-      int n = arg.size();
-      std::stringstream ss;
-      std::copy(arg.begin(), arg.begin() + n, std::ostream_iterator<uint8_t>(ss));
-      {
-        cereal::BinaryInputArchive iarchive(ss);
-        iarchive >> job_list;
-      }
-    }
-    update_job_list(job_list);
-    std::vector<uint8_t> ret;
-    RpcManager::call_remote_function("on_update_job_list_return", ret);
+  RpcManager::register_function("update_job_list", [this](std::shared_ptr<std::vector<uint8_t>> arg) {
+    update_job_list(*get_obj<JobList>(std::move(arg)));
+    RpcManager::call_remote_function("on_update_job_list_return");
   });
 
-  RpcManager::register_function("on_update_job_list_return", [this](const std::vector<uint8_t>& ret) {});
+  RpcManager::register_function("on_update_job_list_return", [this](std::shared_ptr<std::vector<uint8_t>> /*ret*/) {});
 
-  RpcManager::register_function("clear_job_list", [this](const std::vector<uint8_t>& arg) {
+  RpcManager::register_function("clear_job_list", [this](std::shared_ptr<std::vector<uint8_t>> /*arg*/) {
     clear_job_list();
-    std::vector<uint8_t> ret;
-    RpcManager::call_remote_function("on_clear_job_list_return", ret);
+    RpcManager::call_remote_function("on_clear_job_list_return");
   });
 
-  RpcManager::register_function("on_clear_job_list_return", [this](const std::vector<uint8_t>& ret) {});
+  RpcManager::register_function("on_clear_job_list_return", [this](std::shared_ptr<std::vector<uint8_t>> /*ret*/) {});
 
-  RpcManager::register_function("get_jobs", [this](const std::vector<uint8_t>& arg) {
-    std::vector<Job> ret1 = get_jobs();
-    std::vector<uint8_t> ret;
-    {
-      std::stringstream ss;
-      {
-        cereal::BinaryOutputArchive oarchive(ss);
-        oarchive << CEREAL_NVP(ret1);
-      }
-      std::string s = ss.str();
-      std::copy(s.begin(), s.end(), std::back_inserter(ret));
-    }
-    RpcManager::call_remote_function("on_get_jobs_return", ret);
+  RpcManager::register_function("get_jobs", [this](std::shared_ptr<std::vector<uint8_t>> /*arg*/) {
+    RpcManager::call_remote_function("on_get_jobs_return", put_obj<JobList>(get_jobs()));
   });
 
-  RpcManager::register_function("on_get_jobs_return", [this](const std::vector<uint8_t>& ret) {
-    JobList job_list;
-    update_job_list(job_list);
+  RpcManager::register_function("on_get_jobs_return", [this](std::shared_ptr<std::vector<uint8_t>> ret) {
+    // JobList job_list;
+    update_job_list(*get_obj<JobList>(std::move(ret)));
   });
 }
 JobListManager& JobListManager::get_instance()
@@ -180,7 +134,7 @@ void JobListManager::delete_job(const Job& job)
     _jobs.erase(it);
   }
 }
-std::vector<Job> JobListManager::get_jobs()
+JobList JobListManager::get_jobs()
 {
   std::lock_guard<std::mutex> lock(_jobs_mutex);
   return _jobs;
@@ -246,53 +200,55 @@ std::vector<Job> JobListManager::get_extra_running_jobs()
 
 void JobListManager::add_remote_job(const Job& job)
 {
-  std::vector<uint8_t> args;
-  {
-    std::stringstream ss;
-    {
-      cereal::BinaryOutputArchive oarchive(ss);
-      oarchive << CEREAL_NVP(job);
-    }
-    std::string s = ss.str();
-    std::copy(s.begin(), s.end(), std::back_inserter(args));
-  }
-  RpcManager::call_remote_function("add_job", args);
+  // std::vector<uint8_t> args;
+  // {
+  //   std::stringstream ss;
+  //   {
+  //     cereal::BinaryOutputArchive oarchive(ss);
+  //     oarchive << CEREAL_NVP(job);
+  //   }
+  //   std::string s = ss.str();
+  //   std::copy(s.begin(), s.end(), std::back_inserter(args));
+  // }
+  RpcManager::call_remote_function("add_job", put_obj<Job>(job));
+  //job
 }
 void JobListManager::update_remote_job_list(const JobList& job_list)
 {
-  std::vector<uint8_t> args;
-  {
-    std::stringstream ss;
-    {
-      cereal::BinaryOutputArchive oarchive(ss);
-      oarchive << CEREAL_NVP(job_list);
-    }
-    std::string s = ss.str();
-    std::copy(s.begin(), s.end(), std::back_inserter(args));
-  }
-  RpcManager::call_remote_function("update_job_list", args);
+  // std::vector<uint8_t> args;
+  // {
+  //   std::stringstream ss;
+  //   {
+  //     cereal::BinaryOutputArchive oarchive(ss);
+  //     oarchive << CEREAL_NVP(job_list);
+  //   }
+  //   std::string s = ss.str();
+  //   std::copy(s.begin(), s.end(), std::back_inserter(args));
+  // }
+  RpcManager::call_remote_function("update_job_list", put_obj<JobList>(job_list));
+  //job_list
 }
 void JobListManager::clear_remote_job_list()
 {
-  std::vector<uint8_t> args;
+  std::shared_ptr<std::vector<uint8_t>> args = std::make_shared<std::vector<uint8_t>>();
   RpcManager::call_remote_function("clear_job_list", args);
 }
 void JobListManager::delete_remote_job(const Job& job)
 {
-  std::vector<uint8_t> args;
-  {
-    std::stringstream ss;
-    {
-      cereal::BinaryOutputArchive oarchive(ss);
-      oarchive << CEREAL_NVP(job);
-    }
-    std::string s = ss.str();
-    std::copy(s.begin(), s.end(), std::back_inserter(args));
-  }
-  RpcManager::call_remote_function("delete_job", args);
+  // std::vector<uint8_t> args;
+  // {
+  //   std::stringstream ss;
+  //   {
+  //     cereal::BinaryOutputArchive oarchive(ss);
+  //     oarchive << CEREAL_NVP(job);
+  //   }
+  //   std::string s = ss.str();
+  //   std::copy(s.begin(), s.end(), std::back_inserter(args));
+  // }
+  RpcManager::call_remote_function("delete_job", put_obj<Job>(job));
 }
 void JobListManager::get_remote_jobs()
 {
-  std::vector<uint8_t> args;
+  std::shared_ptr<std::vector<uint8_t>> args = std::make_shared<std::vector<uint8_t>>();
   RpcManager::call_remote_function("get_jobs", args);
 }

@@ -45,52 +45,38 @@ void RpcManager::run()
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
       continue;
     }
-    std::vector<uint8_t> data = _receive_q.front();
+    std::shared_ptr<std::vector<uint8_t>> data = _receive_q.front();
     _receive_q.pop();
-    FunctionRequestData req;
-    {
-      int n = data.size();
-      std::stringstream ss;
-      std::copy(data.begin(), data.begin() + n, std::ostream_iterator<uint8_t>(ss));
-      {
-        cereal::BinaryInputArchive iarchive(ss);
-        iarchive >> req;
-      }
-    }
-    auto it = _function_callback_map.find(req.func_name);
+    std::shared_ptr<FunctionRequestData> req = get_obj<FunctionRequestData>(data);
+    auto it = _function_callback_map.find(req->func_name);
     if (it != _function_callback_map.end()) {
-      std::cout << "calling: " << req.func_name << std::endl;
-      it->second(req.args);
+      std::cout << "calling: " << req->func_name << std::endl;
+      it->second(std::make_shared<std::vector<uint8_t>>(req->args));
     }
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   RAY_LOG_INF << "Stopped..";
 }
 
-void RpcManager::register_function(const std::string& func_name, FunctionCallbackHandler handler)
+void RpcManager::register_function(const std::string& func_name, const FunctionCallbackHandler& handler)
 {
   get_instance()._function_callback_map.emplace(std::make_pair(func_name, handler));
 }
-void RpcManager::call_remote_function(const std::string& func_name, const std::vector<uint8_t>& args)
+void RpcManager::call_remote_function(const std::string& func_name)
 {
-  std::vector<uint8_t> buffer;
-  FunctionRequestData data(func_name, args);
-  {
-    std::stringstream ss;
-    {
-      cereal::BinaryOutputArchive oarchive(ss);
-      oarchive << CEREAL_NVP(data);
-    }
-    std::string s = ss.str();
-    std::copy(s.begin(), s.end(), std::back_inserter(buffer));
-  }
+  call_remote_function(func_name, std::shared_ptr<std::vector<uint8_t>>());
+}
+void RpcManager::call_remote_function(const std::string& func_name, std::shared_ptr<std::vector<uint8_t>> args)
+{
+  std::shared_ptr<std::vector<uint8_t>> buffer =
+      put_obj<FunctionRequestData>(FunctionRequestData(func_name, *std::move(args)));
   std::lock_guard<std::mutex> lock(get_instance()._send_q_mutex);
   get_instance()._send_q.emplace(buffer);
 }
 
-std::vector<uint8_t> RpcManager::get_send_buffer()
+std::shared_ptr<std::vector<uint8_t>> RpcManager::get_send_buffer()
 {
-  std::vector<uint8_t> buffer;
+  std::shared_ptr<std::vector<uint8_t>> buffer;
   std::lock_guard<std::mutex> lock(get_instance()._send_q_mutex);
   if (!get_instance()._send_q.empty()) {
     buffer = get_instance()._send_q.front();
@@ -99,8 +85,8 @@ std::vector<uint8_t> RpcManager::get_send_buffer()
   return buffer;
 }
 
-void RpcManager::put_request_buffer(const std::vector<uint8_t>& buf)
+void RpcManager::put_request_buffer(std::shared_ptr<std::vector<uint8_t>> buf)
 {
   std::lock_guard<std::mutex> lock(get_instance()._receive_q_mutex);
-  get_instance()._receive_q.emplace(buf);
+  get_instance()._receive_q.emplace(std::move(buf));
 }

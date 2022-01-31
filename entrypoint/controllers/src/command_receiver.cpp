@@ -140,15 +140,17 @@ void CommandReceiver::run()
           break;
         }
         if (n > 0) {
-          std::vector<uint8_t> valid_buffer;
+          std::shared_ptr<std::vector<uint8_t>> valid_buffer = std::make_shared<std::vector<uint8_t>>();
           std::vector<uint8_t> buffer = web_socket_send_receive_helper.get_buffer();
-          copy(buffer.begin(), buffer.end(), back_inserter(valid_buffer));
+          copy(buffer.begin(), buffer.begin() + n, back_inserter(*valid_buffer));
           RpcManager::put_request_buffer(valid_buffer);
         }
 
-        std::vector<uint8_t> buf = RpcManager::get_send_buffer();
-        if (!buf.empty()) {
-          web_socket_send_receive_helper.sendData(buf);
+        std::shared_ptr<std::vector<uint8_t>> buf = RpcManager::get_send_buffer();
+        if (buf != nullptr) {
+          if (!buf->empty()) {
+            web_socket_send_receive_helper.sendData(*buf);
+          }
         }
       }
       try {
