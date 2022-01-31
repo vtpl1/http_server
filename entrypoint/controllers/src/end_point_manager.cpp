@@ -74,7 +74,7 @@ void EndPointManager::on_status_call_back_event(const std::vector<uint8_t>& data
 std::vector<uint8_t> EndPointManager::on_command_call_back_event(const std::string& req_url)
 {
   std::vector<uint8_t> ret_buffer;
-  JobList job_list(_jlm.get_jobs());
+  JobList job_list = _jlm.get_jobs();
   std::stringstream ss;
   {
     cereal::BinaryOutputArchive oarchive(ss);
