@@ -10,6 +10,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <type_traits> // for is_void
 
 #include "job.h"
 // #include "job.pb.h"
@@ -160,7 +161,7 @@ TEST_CASE("function request response", "[rpc]")
     }
 
     FunctionRequestOrResponseData function_request_or_response_data;
-    function_request_or_response_data.function_request = 1;
+    function_request_or_response_data.request_or_response = FunctionRequestOrResponseData::REQUEST;
     {
       std::stringstream ss;
       {
@@ -251,3 +252,15 @@ TEST_CASE("function request response", "[rpc]")
   // res_req.function_request = 0;
   // res_req.data = res.args;
 }
+void foo(void) { std::cout << "foo" << std::endl; }
+
+// template <typename R, typename... A> void test(R (*func)(A...))
+// {
+//   static_assert(!std::is_void<R>::value, "void return type is not allowed");
+// }
+void call_foo()
+{
+  auto f = foo;
+  // test(f);
+}
+TEST_CASE("call decorator", "[rpc]") { call_foo(); }
