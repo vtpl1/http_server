@@ -15,21 +15,21 @@ function init_hls_object(id, index) {
 	if (Hls.isSupported()) {
 		window.g_hls_objects[index] = new Hls(config);
 		if (window.g_hls_objects[index] != undefined && window.g_hls_objects[index] != null) {
+			window.g_hls_objects[index].loadSource(window.g_source_list[index]);
 			window.g_hls_objects[index].attachMedia(document.getElementById(id));
-			window.g_hls_objects[index].on(Hls.Events.MEDIA_ATTACHED, function () {
-				console.log("Media Attached");
-				window.g_hls_objects[index].loadSource(window.g_source_list[index]);
-				/*window.g_hls_objects[index].on(Hls.Events.MANIFEST_PARSED, function () {
-					console.log("Manifest Parsed");
-					document.getElementById(id).play();
-				});*/
+			window.g_hls_objects[index].on(Hls.Events.MANIFEST_PARSED, function () {
+				console.log("Manifest Parsed");
+				document.getElementById(id).play();
 			});
+			// window.g_hls_objects[index].on(Hls.Events.MEDIA_ATTACHED, function () {
+			// 	console.log("Media Attached");
+			// });
 			/*window.g_hls_objects[index].on(Hls.Events.MEDIA_DETACHED, function () {
 				console.error("Media Detached");
 				window.g_hls_objects[index].attachMedia(document.getElementById(id));
 			});*/
 
-			window.g_hls_objects[index].on(Hls.Events.ERROR, function(event, data) {
+			window.g_hls_objects[index].on(Hls.Events.ERROR, function (event, data) {
 				if (data.fatal) {
 					// console.error('Fatal error :' + data.details);
 					switch (data.type) {
@@ -39,7 +39,8 @@ function init_hls_object(id, index) {
 							break;
 						case Hls.ErrorTypes.NETWORK_ERROR:
 							console.error('MONOTOSH NETWORK_ERROR :' + data.details);
-							// setTimeout(delayedStartLoad, 5*1000, index);
+							setTimeout(delayedStartLoad, 1 * 1000, index);
+							window.g_hls_objects[index].loadSource(window.g_source_list[index]);
 							window.g_hls_objects[index].startLoad();
 							// window.g_hls_objects[index].recoverMediaError();
 							break;

@@ -1,11 +1,13 @@
 var config = {
 	debug: true,
 
-
-
-    manifestLoadingMaxRetry: 3,
-    manifestLoadingRetryDelay: 1,
-    manifestLoadingMaxRetryTimeout: 32
+    autoStartLoad: true,
+    manifestLoadingMaxRetry: 300000,
+    manifestLoadingMaxRetryTimeout: 1000,
+    levelLoadingMaxRetry: 300000,
+    levelLoadingMaxRetryTimeout: 1000,
+    fragLoadingMaxRetry: 300000,
+    fragLoadingMaxRetryTimeout: 1000
 
 
     // nudgeMaxRetry: 1,
