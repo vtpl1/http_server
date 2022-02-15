@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cereal/archives/binary.hpp>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <mutex>

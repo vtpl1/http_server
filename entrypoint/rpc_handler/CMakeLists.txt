@@ -2,18 +2,18 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
-add_library(rpc_handler
+add_library(rpc_handler SHARED
     src/rpc_manager.cpp
-
     src/function_request_data.cpp
     src/function_response_data.cpp
     src/function_request_or_response_data.cpp
+)
 
-    inc/rpc_manager.h
-
-    inc/function_request_data.h
-    inc/function_response_data.h
-    inc/function_request_or_response_data.h
+target_precompile_headers(rpc_handler
+    PUBLIC inc/rpc_manager.h
+    PUBLIC inc/function_request_data.h
+    PUBLIC inc/function_response_data.h
+    PUBLIC inc/function_request_or_response_data.h
 )
 
 target_include_directories(rpc_handler

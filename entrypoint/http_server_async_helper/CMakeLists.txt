@@ -5,26 +5,22 @@
 find_package(Boost REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Poco REQUIRED Util)
-add_library(http_server_async_helper
+add_library(http_server_async_helper SHARED
     src/http_server.cpp
     src/http_session.cpp
     src/server.cpp
     src/websocket_session.cpp
     # src/connection_manager.cpp
 
-    inc/http_server.h
-
-
-    inc/server.hpp
-    inc/http_session.hpp
-    inc/websocket_session.hpp
     # inc/connection_manager.hpp
 )
 
-# target_precompile_headers(http_server_async_helper
-#   PUBLIC    <boost/asio.hpp>
-#   PRIVATE   <boost/beast.hpp>
-# )
+target_precompile_headers(http_server_async_helper
+    PUBLIC inc/http_server.h
+    PUBLIC inc/server.hpp
+    PUBLIC inc/http_session.hpp
+    PUBLIC inc/websocket_session.hpp
+)
 
 if (MSVC)
 target_compile_options(http_server_async_helper

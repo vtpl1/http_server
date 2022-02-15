@@ -2,54 +2,62 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
-# find_package(protobuf COMPONENTS libprotobuf protoc)
+find_package(Protobuf COMPONENTS libprotobuf protoc)
 find_package(cereal REQUIRED)
 
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-#     interfaces/status.proto
-#     interfaces/job.proto
-# )
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS interfaces/job.proto)
 
-# protobuf_generate(
-#     LANGUAGE cpp
-#     TARGET datamodels
-#     PROTOS interfaces/status.proto
-# )
+add_library(protobuf_helper_datamodels STATIC
+    src/protobuf_helper.cpp
 
-add_library(datamodels
-    src/job.cpp
-    src/status.cpp
-    src/media_command.cpp
-    src/job_media_command_map.cpp
-
-    inc/job.h
-    inc/status.h
-    inc/media_command.h
-    inc/job_media_command_map.h
-
-    # ${PROTO_SRCS}
-    # ${PROTO_HDRS}
+    ${PROTO_SRCS}
 )
 
-target_include_directories(datamodels
+target_precompile_headers(protobuf_helper_datamodels
+    PUBLIC ${PROTO_HDRS}
+    PUBLIC inc/protobuf_helper.h
+)
+
+target_include_directories(protobuf_helper_datamodels
     PUBLIC inc
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# target_link_libraries(datamodels
-#     PUBLIC protobuf::libprotobuf
-# )
+target_link_libraries(protobuf_helper_datamodels
+    PUBLIC protobuf::libprotobuf
+)
+
+set_target_properties(
+    protobuf_helper_datamodels
+    PROPERTIES
+         CXX_CLANG_TIDY ""
+)
+
+add_library(datamodels SHARED
+    src/job.cpp
+    src/status.cpp
+    src/media_command.cpp
+    src/job_media_command_map.cpp
+)
+
+target_include_directories(datamodels
+    PUBLIC inc
+)
 
 target_link_libraries(datamodels
     PUBLIC cereal
+    PUBLIC protobuf_helper_datamodels
 )
 
-# target_precompile_headers(datamodels
-#     PUBLIC inc/job.h
-#     PUBLIC inc/status.h
-#     PUBLIC inc/media_command.h
-#     PUBLIC inc/job_media_command_map.h
-# )
+target_precompile_headers(datamodels
+    PUBLIC inc/job.h
+    PUBLIC inc/status.h
+    PUBLIC inc/media_command.h
+    PUBLIC inc/job_media_command_map.h
+)
+
+set_property(TARGET protobuf_helper_datamodels PROPERTY
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 set_property(TARGET datamodels PROPERTY
   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

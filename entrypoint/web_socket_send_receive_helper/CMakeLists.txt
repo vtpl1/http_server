@@ -4,10 +4,12 @@
 
 find_package(Poco REQUIRED Foundation Net)
 
-add_library(web_socket_send_receive_helper
+add_library(web_socket_send_receive_helper SHARED
     src/web_socket_send_receive_helper.cpp
+)
 
-    inc/web_socket_send_receive_helper.h
+target_precompile_headers(web_socket_send_receive_helper
+    PUBLIC inc/web_socket_send_receive_helper.h
 )
 
 target_include_directories(web_socket_send_receive_helper
@@ -22,4 +24,4 @@ target_link_libraries(web_socket_send_receive_helper
 )
 
 set_property(TARGET web_socket_send_receive_helper PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

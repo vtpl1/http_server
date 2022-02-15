@@ -1,15 +1,21 @@
-cmake_minimum_required(VERSION 3.17)
 find_package(spdlog REQUIRED)
 
-add_library(utils STATIC
+add_library(utils SHARED
   src/logging.cpp
   src/Chameleon.cpp
   src/ConfigFile.cpp
 
-  inc/logging.h
-  inc/Chameleon.h
-  inc/ConfigFile.h
+  # inc/logging.h
+  # inc/Chameleon.h
+  # inc/ConfigFile.h
 )
+
+target_precompile_headers(utils
+  PUBLIC inc/logging.h
+  PUBLIC inc/Chameleon.h
+  PUBLIC inc/ConfigFile.h
+)
+
 
 target_include_directories(utils
   PUBLIC inc

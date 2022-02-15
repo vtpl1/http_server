@@ -20,11 +20,42 @@
                 "request": "launch",
                 "program": "${workspaceFolder}/build/entrypoint/entrypoint",
                 "args": [],
-                "stopAtEntry": false,
+                "stopAtEntry": true,
                 "cwd": "${workspaceFolder}",
                 "environment": [],
                 "console": "integratedTerminal",
                 "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+        },
+        {
+            "name": "entrypoint_lldb",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/entrypoint/Debug/entrypoint.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal",
+            "linux": {
+                "name": "entrypoint",
+                "type": "lldb",
+                // "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/entrypoint/entrypoint",
+                "args": [],
+                "stopAtEntry": true,
+                "cwd": "${workspaceFolder}",
+                "environment": [],
+                "console": "integratedTerminal",
+                // "MIMode": "lldb",
                 "setupCommands": [
                     {
                         "description": "Enable pretty-printing for gdb",
