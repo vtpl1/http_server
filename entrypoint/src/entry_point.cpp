@@ -3,7 +3,6 @@
 // *****************************************************
 
 #include <Poco/ErrorHandler.h>
-#include <Poco/Net/Net.h>
 #include <Poco/Util/AbstractConfiguration.h>
 #include <Poco/Util/HelpFormatter.h>
 #include <Poco/Util/ServerApplication.h>
