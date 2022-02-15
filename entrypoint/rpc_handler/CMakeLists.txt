@@ -2,7 +2,7 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
-add_library(rpc_handler SHARED
+add_library(rpc_handler STATIC
     src/rpc_manager.cpp
     src/function_request_data.cpp
     src/function_response_data.cpp
@@ -22,7 +22,6 @@ target_include_directories(rpc_handler
 
 target_link_libraries(rpc_handler
     PRIVATE utils
-    PRIVATE Poco::Foundation
 )
 
 set_property(TARGET rpc_handler PROPERTY

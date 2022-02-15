@@ -35,7 +35,7 @@ set_target_properties(
 )
 
 
-add_library(resource_monitor SHARED
+add_library(resource_monitor STATIC
     src/monitor.cpp
 )
 
@@ -45,6 +45,7 @@ target_include_directories(resource_monitor
 
 
 target_link_libraries(resource_monitor
+    PUBLIC Poco::Util
     PUBLIC Poco::Net
     PUBLIC spdlog::spdlog
     PUBLIC protobuf_helper_resource_monitor

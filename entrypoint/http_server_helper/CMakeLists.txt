@@ -2,9 +2,9 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
-find_package(Poco REQUIRED Foundation Net)
+find_package(Poco REQUIRED Foundation Util Net)
 
-add_library(http_server_helper SHARED
+add_library(http_server_helper STATIC
     src/http_server.cpp
     src/generic_http_request_handler_factory.cpp
     src/options_request_handler.cpp
@@ -39,6 +39,7 @@ target_link_libraries(http_server_helper
     PRIVATE rpc_handler
     PRIVATE web_socket_send_receive_helper
     PRIVATE Poco::Foundation
+    PRIVATE Poco::Util
     PRIVATE Poco::Net
 )
 

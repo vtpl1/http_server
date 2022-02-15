@@ -1,13 +1,9 @@
 find_package(spdlog REQUIRED)
 
-add_library(utils SHARED
+add_library(utils STATIC
   src/logging.cpp
   src/Chameleon.cpp
   src/ConfigFile.cpp
-
-  # inc/logging.h
-  # inc/Chameleon.h
-  # inc/ConfigFile.h
 )
 
 target_precompile_headers(utils

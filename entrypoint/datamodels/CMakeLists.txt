@@ -33,7 +33,7 @@ set_target_properties(
          CXX_CLANG_TIDY ""
 )
 
-add_library(datamodels SHARED
+add_library(datamodels STATIC
     src/job.cpp
     src/status.cpp
     src/media_command.cpp

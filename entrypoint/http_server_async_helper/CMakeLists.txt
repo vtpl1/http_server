@@ -5,7 +5,7 @@
 find_package(Boost REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Poco REQUIRED Util)
-add_library(http_server_async_helper SHARED
+add_library(http_server_async_helper STATIC
     src/http_server.cpp
     src/http_session.cpp
     src/server.cpp

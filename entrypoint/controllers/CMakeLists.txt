@@ -5,7 +5,7 @@
 find_package(Poco REQUIRED Foundation)
 find_package(yaml-cpp REQUIRED)
 
-add_library(controllers SHARED
+add_library(controllers STATIC
     src/end_point_manager.cpp
     src/job_list_manager.cpp
     src/pipeline_manager.cpp
@@ -38,4 +38,4 @@ target_link_libraries(controllers
 )
 
 set_property(TARGET controllers PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

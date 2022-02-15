@@ -4,7 +4,7 @@
 
 find_package(Poco REQUIRED Foundation Net)
 
-add_library(web_socket_send_receive_helper SHARED
+add_library(web_socket_send_receive_helper STATIC
     src/web_socket_send_receive_helper.cpp
 )
 
