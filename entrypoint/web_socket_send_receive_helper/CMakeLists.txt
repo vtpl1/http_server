@@ -1,7 +1,6 @@
 # *****************************************************
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
-find_package(OpenSSL REQUIRED)
 find_package(Poco REQUIRED Foundation NetSSL)
 
 add_library(web_socket_send_receive_helper STATIC
@@ -21,8 +20,6 @@ target_link_libraries(web_socket_send_receive_helper
     # PUBLIC rpc_handler
     PUBLIC Poco::Foundation
     PUBLIC Poco::NetSSL
-    PUBLIC OpenSSL::SSL
-    PUBLIC OpenSSL::Crypto
 )
 
 set_property(TARGET web_socket_send_receive_helper PROPERTY

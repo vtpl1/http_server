@@ -1,7 +1,7 @@
 # *****************************************************
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
-find_package(OpenSSL REQUIRED)
+
 find_package(Poco REQUIRED Foundation Util NetSSL)
 
 add_library(http_server_helper STATIC
@@ -41,8 +41,6 @@ target_link_libraries(http_server_helper
     PUBLIC Poco::Foundation
     PUBLIC Poco::Util
     PUBLIC Poco::NetSSL
-    PUBLIC OpenSSL::SSL
-    PUBLIC OpenSSL::Crypto
 )
 
 set_property(TARGET http_server_helper PROPERTY
