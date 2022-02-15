@@ -3,12 +3,12 @@ find_package(spdlog REQUIRED)
 
 add_library(utils STATIC
   src/logging.cpp
-  inc/logging.h
-)
+  src/Chameleon.cpp
+  src/ConfigFile.cpp
 
-set_target_properties(utils
-  PROPERTIES
-    CXX_CLANG_TIDY ""
+  inc/logging.h
+  inc/Chameleon.h
+  inc/ConfigFile.h
 )
 
 target_include_directories(utils
@@ -17,10 +17,6 @@ target_include_directories(utils
 
 target_link_libraries(utils
   PUBLIC spdlog::spdlog
-)
-
-target_precompile_headers(utils
-  PUBLIC    inc/logging.h
 )
 
 set_property(TARGET utils PROPERTY

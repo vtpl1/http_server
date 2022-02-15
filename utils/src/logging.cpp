@@ -28,24 +28,24 @@ namespace ray
 #define EL_RAY_FATAL_CHECK_FAILED "RAY_FATAL_CHECK_FAILED"
 
 RayLogLevel RayLog::severity_threshold_ = RayLogLevel::INFO;
-std::string RayLog::app_name_{""};
-std::string RayLog::log_dir_{""};
+std::string RayLog::app_name_;
+std::string RayLog::log_dir_;
 // Format pattern is 2020-08-21 17:00:00,000 I 100 1001 msg.
 // %L is loglevel, %P is process id, %t for thread id.
 std::string RayLog::log_format_pattern_ = "[%Y-%m-%d %H:%M:%S,%e %L %P %t] %v";
 std::string RayLog::logger_name_ = "ray_log_sink";
-long RayLog::log_rotation_max_size_ = 1 << 29;
-long RayLog::log_rotation_file_num_ = 10;
+uint64_t RayLog::log_rotation_max_size_ = (1 << 29);
+int64_t RayLog::log_rotation_file_num_ = 10;
 bool RayLog::is_failure_signal_handler_installed_ = false;
 
 inline const char* ConstBasename(const char* filepath)
 {
   const char* base = strrchr(filepath, '/');
 #ifdef OS_WINDOWS // Look for either path separator in Windows
-  if (!base)
+  if (base != nullptr)
     base = strrchr(filepath, '\\');
 #endif
-  return base ? (base + 1) : filepath;
+  return (base != nullptr) ? (base + 1) : filepath;
 }
 
 /// A logger that prints logs to stderr.
@@ -62,6 +62,11 @@ public:
     static DefaultStdErrLogger instance;
     return instance;
   }
+  ~DefaultStdErrLogger() = default;
+  DefaultStdErrLogger(DefaultStdErrLogger const&) = delete;
+  DefaultStdErrLogger(DefaultStdErrLogger&&) = delete;
+  DefaultStdErrLogger& operator=(DefaultStdErrLogger&& other) = delete;
+  DefaultStdErrLogger& operator=(DefaultStdErrLogger other) = delete;
 
 private:
   DefaultStdErrLogger()
@@ -69,9 +74,6 @@ private:
     default_stderr_logger_ = spdlog::stderr_color_mt("stderr");
     default_stderr_logger_->set_pattern(RayLog::GetLogFormatPattern());
   }
-  ~DefaultStdErrLogger() = default;
-  DefaultStdErrLogger(DefaultStdErrLogger const&) = delete;
-  DefaultStdErrLogger(DefaultStdErrLogger&&) = delete;
   std::shared_ptr<spdlog::logger> default_stderr_logger_;
 };
 
@@ -79,7 +81,7 @@ class SpdLogMessage final
 {
 public:
   explicit SpdLogMessage(const char* file, int line, int loglevel, std::shared_ptr<std::ostringstream> expose_osstream)
-      : loglevel_(loglevel), expose_osstream_(expose_osstream)
+      : loglevel_(loglevel), expose_osstream_(std::move(expose_osstream))
   {
     stream() << ConstBasename(file) << ":" << line << ": ";
   }
@@ -102,12 +104,13 @@ public:
     logger->flush();
   }
 
-  ~SpdLogMessage() { Flush(); }
-  inline std::ostream& stream() { return str_; }
-
-private:
+  SpdLogMessage(SpdLogMessage&&) = delete;
   SpdLogMessage(const SpdLogMessage&) = delete;
   SpdLogMessage& operator=(const SpdLogMessage&) = delete;
+  SpdLogMessage& operator=(SpdLogMessage&& other) = delete;
+  SpdLogMessage& operator=(SpdLogMessage other) = delete;
+  ~SpdLogMessage() { Flush(); }
+  inline std::ostream& stream() { return str_; }
 
 private:
   std::ostringstream str_;
@@ -115,7 +118,7 @@ private:
   std::shared_ptr<std::ostringstream> expose_osstream_;
 };
 
-typedef ray::SpdLogMessage LoggingProvider;
+using LoggingProvider = ray::SpdLogMessage;
 
 // Spdlog's severity map.
 static int GetMappedSeverity(RayLogLevel severity)
@@ -173,7 +176,7 @@ void RayLog::StartRayLog(const std::string& app_name, RayLogLevel severity_thres
   if (!log_dir_.empty()) {
     // Enable log file if log_dir_ is not empty.
     std::string dir_ends_with_slash = log_dir_;
-    std::string app_name_without_path = app_name;
+    const std::string& app_name_without_path = app_name;
 #ifdef _WIN32
     int pid = _getpid();
 #else
@@ -181,16 +184,16 @@ void RayLog::StartRayLog(const std::string& app_name, RayLogLevel severity_thres
 #endif
     // Reset log pattern and level and we assume a log file can be rotated with
     // 10 files in max size 512M by default.
-    if (getenv("RAY_ROTATION_MAX_BYTES")) {
-      long max_size = std::atol(getenv("RAY_ROTATION_MAX_BYTES"));
+    if (getenv("RAY_ROTATION_MAX_BYTES") != nullptr) {
+      auto max_size = std::atol(getenv("RAY_ROTATION_MAX_BYTES"));
       // 0 means no log rotation in python, but not in spdlog. We just use the default
       // value here.
       if (max_size != 0) {
         log_rotation_max_size_ = max_size;
       }
     }
-    if (getenv("RAY_ROTATION_BACKUP_COUNT")) {
-      long file_num = std::atol(getenv("RAY_ROTATION_BACKUP_COUNT"));
+    if (getenv("RAY_ROTATION_BACKUP_COUNT") != nullptr) {
+      auto file_num = std::atol(getenv("RAY_ROTATION_BACKUP_COUNT"));
       if (file_num != 0) {
         log_rotation_file_num_ = file_num;
       }
@@ -220,7 +223,8 @@ void RayLog::StartRayLog(const std::string& app_name, RayLogLevel severity_thres
     err_sink->set_level(spdlog::level::err);
 
     auto logger =
-        std::shared_ptr<spdlog::logger>(new spdlog::logger(RayLog::GetLoggerName(), {console_sink, err_sink}));
+        std::make_shared<spdlog::logger>(RayLog::GetLoggerName(), spdlog::sinks_init_list({console_sink, err_sink}));
+
     logger->set_level(level);
     spdlog::set_default_logger(logger);
   }
@@ -238,7 +242,8 @@ void RayLog::UninstallSignalAction()
     RAY_CHECK(signal(signal_num, SIG_DFL) != SIG_ERR);
   }
 #else
-  struct sigaction sig_action;
+  struct sigaction sig_action {
+  };
   memset(&sig_action, 0, sizeof(sig_action));
   sigemptyset(&sig_action.sa_mask);
   sig_action.sa_handler = SIG_DFL;

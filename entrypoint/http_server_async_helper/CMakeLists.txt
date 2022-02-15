@@ -21,10 +21,11 @@ add_library(http_server_async_helper
     # inc/connection_manager.hpp
 )
 
-target_precompile_headers(http_server_async_helper
-  PUBLIC    <boost/asio.hpp>
-  PRIVATE   <boost/beast.hpp>
-)
+# target_precompile_headers(http_server_async_helper
+#   PUBLIC    <boost/asio.hpp>
+#   PRIVATE   <boost/beast.hpp>
+# )
+
 if (MSVC)
 target_compile_options(http_server_async_helper
     PUBLIC -bigobj

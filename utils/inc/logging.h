@@ -251,9 +251,9 @@ class RayLog : public RayLogBase {
   // Log format content.
   static std::string log_format_pattern_;
   // Log rotation file size limitation.
-  static long log_rotation_max_size_;
+  static uint64_t log_rotation_max_size_;
   // Log rotation file number.
-  static long log_rotation_file_num_;
+  static int64_t log_rotation_file_num_;
   // Ray default logger name.
   static std::string logger_name_;
 

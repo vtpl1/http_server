@@ -190,7 +190,7 @@ TEST_CASE("function request response", "[rpc]")
     std::cout << "Received Buffer size:----------- " << buffer.size() << std::endl;
     FunctionRequestOrResponseData function_request_or_response_data;
     {
-      int n = buffer.size();
+      std::vector<unsigned char>::difference_type n = buffer.size();
       std::stringstream ss;
       std::copy(buffer.begin(), buffer.begin() + n, std::ostream_iterator<uint8_t>(ss));
       {
@@ -201,7 +201,7 @@ TEST_CASE("function request response", "[rpc]")
 
     FunctionRequestData req;
     {
-      int n = function_request_or_response_data.data.size();
+      size_t n = function_request_or_response_data.data.size();
       std::stringstream ss;
       std::copy(function_request_or_response_data.data.begin(), function_request_or_response_data.data.begin() + n,
                 std::ostream_iterator<uint8_t>(ss));
@@ -212,7 +212,7 @@ TEST_CASE("function request response", "[rpc]")
     }
     Job job;
     {
-      int n = req.args.size();
+      size_t n = req.args.size();
       std::stringstream ss;
       std::copy(req.args.begin(), req.args.begin() + n, std::ostream_iterator<uint8_t>(ss));
       {

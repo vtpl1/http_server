@@ -1,6 +1,5 @@
 FROM ubuntu:20.04
 
-
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends ca-certificates software-properties-common \
     git curl wget ninja-build build-essential gdb python3-pip python3-setuptools \
@@ -17,10 +16,6 @@ ARG LLVM_VERSION=13
 
 RUN add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-$LLVM_VERSION main"
 
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install clang-13 --install-suggests
-
-
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install clang-$LLVM_VERSION lldb-$LLVM_VERSION lld-$LLVM_VERSION clangd-$LLVM_VERSION \
     clang-tidy-$LLVM_VERSION clang-format-$LLVM_VERSION clang-tools-$LLVM_VERSION \
@@ -31,16 +26,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install ccache
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install clang-13 clang-tools-13 \
-#     libclang-common-13-dev libclang-13-dev libclang1-13 \
-#     clang-format-13 clang-tidy-13 \
-#     lldb-13 lld-13
 
-
-# ARG all="all"
-# RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh) $(all)"
-# COPY ./update-alternatives-clang.sh ./update-alternatives-clang.sh
 ARG priority=100
 
 RUN update-alternatives \

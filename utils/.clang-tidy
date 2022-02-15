@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-llvmlibc-*,-fuchsia-default-arguments-calls,-altera-unroll-loops,-altera-id-dependent-backward-branch,-modernize-use-trailing-return-type,-bugprone-easily-swappable-parameters,-misc-no-recursion'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-llvmlibc-*,-fuchsia-*,-altera-unroll-loops,-modernize-use-trailing-return-type,-bugprone-easily-swappable-parameters,-misc-no-recursion,-cppcoreguidelines-*,-cert-err58-cpp,-cert-err34-c,-readability-magic-numbers,-concurrency-mt-unsafe,-altera-id-dependent-backward-branch'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -58,7 +58,7 @@ CheckOptions:
   - key:             android-comparison-in-temp-failure-retry.RetryMacros
     value:           TEMP_FAILURE_RETRY
   - key:             hicpp-signed-bitwise.IgnorePositiveIntegerLiterals
-    value:           'false'
+    value:           'true'
   - key:             bugprone-easily-swappable-parameters.QualifiersMix
     value:           'false'
   - key:             cert-err09-cpp.WarnOnLargeObjects
