@@ -36,7 +36,8 @@ void HttpServer::start()
   Poco::Net::HTTPServerParams::Ptr http_server_params = new Poco::Net::HTTPServerParams();
   http_server_params->setMaxQueued(MAX_REQUEST_QUEUE_SIZE);
   http_server_params->setMaxThreads(MAX_THREADS);
-  Poco::Net::SecureServerSocket svs(_port);
+  // Poco::Net::SecureServerSocket svs(_port);
+  Poco::Net::ServerSocket svs(_port);
   svs.setReuseAddress(true);
   svs.setReusePort(false);
   _generic_http_request_handler_factory.assign(new GenericHttpRequestHandlerFactory(

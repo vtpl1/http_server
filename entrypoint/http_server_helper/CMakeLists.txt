@@ -2,7 +2,12 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
+if (MSVC)
+find_package(Poco REQUIRED Foundation Util NetSSLWin)
+else()
 find_package(Poco REQUIRED Foundation Util NetSSL)
+endif()
+
 
 add_library(http_server_helper STATIC
     src/http_server.cpp
@@ -40,8 +45,15 @@ target_link_libraries(http_server_helper
     PUBLIC web_socket_send_receive_helper
     PUBLIC Poco::Foundation
     PUBLIC Poco::Util
+)
+if (MSVC)
+target_link_libraries(http_server_helper
+    PUBLIC Poco::NetSSLWin
+)
+else()
+target_link_libraries(http_server_helper
     PUBLIC Poco::NetSSL
 )
-
+endif()
 set_property(TARGET http_server_helper PROPERTY
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

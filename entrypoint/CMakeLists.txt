@@ -1,4 +1,4 @@
-find_package(Poco REQUIRED Util NetSSL)
+find_package(Poco REQUIRED Util)
 
 add_subdirectory(datamodels)
 add_subdirectory(rpc_handler)
@@ -16,7 +16,6 @@ target_link_libraries(entrypoint
     PRIVATE controllers
     PRIVATE datamodels
     PRIVATE Poco::Util
-    PRIVATE Poco::NetSSL
 )
 
 set_property(TARGET entrypoint PROPERTY

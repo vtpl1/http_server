@@ -2,8 +2,12 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
-find_package(Protobuf COMPONENTS libprotobuf protoc)
+if(MSVC)
+find_package(Poco REQUIRED Util NetSSLWin)
+else()
 find_package(Poco REQUIRED Util NetSSL)
+endif()
+find_package(Protobuf COMPONENTS libprotobuf protoc)
 find_package(spdlog REQUIRED)
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS interfaces/status.proto)
@@ -46,10 +50,18 @@ target_include_directories(resource_monitor
 
 target_link_libraries(resource_monitor
     PUBLIC Poco::Util
-    PUBLIC Poco::NetSSL
     PUBLIC spdlog::spdlog
     PUBLIC protobuf_helper_resource_monitor
 )
+if(MSVC)
+target_link_libraries(resource_monitor
+    PUBLIC Poco::NetSSLWin
+)
+else()
+target_link_libraries(resource_monitor
+    PUBLIC Poco::NetSSL
+)
+endif()
 
 add_executable(resource_monitor_test
     src/monitor_test.cpp
