@@ -136,14 +136,22 @@ void CommandReceiver::run()
       WebSocketSendReceiveHelper web_socket_send_receive_helper(ws, true);
       while (!_do_shutdown_composite()) {
         int n = 0;
-        if (!web_socket_send_receive_helper.readDataAndprocessPingPong(n)) {
+        bool is_binary = false;
+        if (!web_socket_send_receive_helper.readDataAndprocessPingPong(n, is_binary)) {
           break;
         }
         if (n > 0) {
-          std::shared_ptr<std::vector<uint8_t>> valid_buffer = std::make_shared<std::vector<uint8_t>>();
           std::vector<uint8_t> buffer = web_socket_send_receive_helper.get_buffer();
-          copy(buffer.begin(), buffer.begin() + n, back_inserter(*valid_buffer));
-          RpcManager::put_request_buffer(valid_buffer);
+          if (is_binary) {
+            std::shared_ptr<std::vector<uint8_t>> valid_buffer = std::make_shared<std::vector<uint8_t>>();
+            copy(buffer.begin(), buffer.begin() + n, back_inserter(*valid_buffer));
+            RpcManager::put_request_buffer(valid_buffer);
+          } else {
+            std::stringstream ss;
+            std::copy(buffer.begin(), buffer.begin() + n, std::ostream_iterator<uint8_t>(ss));
+            RAY_LOG_INF << "Text received " << ss.str();
+            // web_socket_send_receive_helper.sendString(ss.str());
+          }
         }
 
         std::shared_ptr<std::vector<uint8_t>> buf = RpcManager::get_send_buffer();
