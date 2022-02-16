@@ -8,6 +8,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # set(CMAKE_CXX_CLANG_TIDY
 #     clang-tidy;)
 
+# set(CMAKE_C_CLANG_TIDY
+#     clang-tidy;)
+
 find_package(Git)
 if(Git_FOUND)
     execute_process(COMMAND ${GIT_EXECUTABLE} describe --always --abbrev=40
