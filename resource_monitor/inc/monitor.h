@@ -26,15 +26,17 @@ private:
   std::atomic_bool _do_shutdown{false};
   std::atomic_bool _is_internal_shutdown{false};
   std::unique_ptr<std::thread> _thread;
-  Monitor(std::string target_host_address, uint16_t target_port);
+  std::string _session_folder;
+  Monitor(std::string session_folder, std::string target_host_address, uint16_t target_port);
   ~Monitor();
   void setStatusInternal(uint64_t id);
   void run();
 
 public:
   static void setStatus(int16_t app_id, int16_t channel_id, uint64_t id);
-  static Monitor& getInstance(std::string target_host_address, uint16_t target_port);
   static Monitor& getInstance();
+  static Monitor& getInstance(std::string session_folder);
+  static Monitor& getInstance(std::string session_folder, std::string target_host_address, uint16_t target_port);
 };
 
 #endif

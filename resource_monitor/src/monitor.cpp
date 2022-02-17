@@ -4,6 +4,7 @@
 #include <Poco/Net/NetException.h>
 #include <Poco/Net/SocketStream.h>
 #include <Poco/Net/StreamSocket.h>
+#include <Poco/Path.h>
 #include <Poco/Timespan.h>
 #include <Poco/Timestamp.h>
 #include <fmt/chrono.h>
@@ -26,19 +27,25 @@ constexpr int max_size = 1048576 * 5;
 constexpr int max_files = 3;
 constexpr int banner_spaces = 80;
 
-Monitor::Monitor(std::string target_host_address, uint16_t target_port)
-    : _target_host_address(std::move(target_host_address)), _target_port(target_port)
+Monitor::Monitor(std::string session_folder, std::string target_host_address, uint16_t target_port)
+    : _session_folder(std::move(session_folder)), _target_host_address(std::move(target_host_address)),
+      _target_port(target_port)
 {
   _thread = std::make_unique<std::thread>(&Monitor::run, this);
 }
 
-Monitor& Monitor::getInstance(std::string target_host_address, uint16_t target_port)
+Monitor& Monitor::getInstance(std::string session_folder, std::string target_host_address, uint16_t target_port)
 {
-  static Monitor instance(std::move(target_host_address), target_port);
+  static Monitor instance(std::move(session_folder), std::move(target_host_address), target_port);
   return instance;
 }
 
-Monitor& Monitor::getInstance() { return getInstance("127.0.0.1", MONITOR_PORT_NUMBER); }
+Monitor& Monitor::getInstance() { return getInstance("session"); }
+
+Monitor& Monitor::getInstance(std::string session_folder)
+{
+  return getInstance(std::move(session_folder), "127.0.0.1", MONITOR_PORT_NUMBER);
+}
 
 Monitor::~Monitor()
 {
@@ -174,7 +181,11 @@ void Monitor::run()
   int sleep_upto_sec = max_sleep_upto_sec;
   int iteration_counter = 0;
   int fps_log_counter = 0;
-  auto logger = spdlog::rotating_logger_mt("fps", "session/fps.txt", max_size, max_files);
+  Poco::Path base_path(_session_folder);
+  base_path.append("fps.txt");
+  std::string monitor_path = base_path.absolute().toString();
+  std::cout << "Monitor folder is at: " << monitor_path << std::endl;
+  auto logger = spdlog::rotating_logger_mt("fps", monitor_path, max_size, max_files);
   size_t last_map_size = 0;
   // change log pattern
   logger->set_pattern("%v");
