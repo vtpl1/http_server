@@ -1,21 +1,29 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.194.3/containers/cpp
 {
 	"name": "C++",
-	// Sets the run context to one level up instead of the .devcontainer folder.
-	"context": "..",
-	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-	"dockerFile": "./Dockerfile",
-	// "build": {
-	// 	"dockerfile": "Dockerfile",
-	// },
-	// Set *default* container specific settings.json values on container create.
-	"settings": {},
+	"build": {
+		"dockerfile": "Dockerfile",
+	},
 	"runArgs": [
 		"--cap-add=SYS_PTRACE",
 		"--security-opt",
 		"seccomp=unconfined",
 		"-e",
 		"DISPLAY=${env:DISPLAY}",
+		"-v",
+		"/tmp/.X11-unix:/tmp/.X11-unix",
+		"--add-host",
+		"git.videonetics.com:192.168.1.93",
+		"--add-host",
+		"master.videonetics.com:192.168.3.225",
+		"--add-host",
+		"subscriber.videonetics.com:192.168.3.225",
+		"--add-host",
+		"mq.videonetics.com:192.168.3.226",
 	],
+	// Set *default* container specific settings.json values on container create.
+	"settings": {},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-vscode.cpptools",
@@ -25,29 +33,22 @@
 		"ms-python.python",
 		"jeff-hykin.better-cpp-syntax",
 		"gruntfuggly.todo-tree",
-		"xaver.clang-format"
+		"xaver.clang-format",
+		"johnstoncode.svn-scm",
+		"humao.rest-client"
 	],
+	"containerEnv": {
+		"LD_LIBRARY_PATH": "${containerWorkspaceFolder}/lib_module_dependencies",
+		"VCPKG_BINARY_SOURCES": "clear;files,${containerWorkspaceFolder}/../thirdparty/vcpkg_cache,readwrite"
+	},
 	"mounts": [
-		"source=${localWorkspaceFolder}/../thirdparty,target=/workspaces/thirdparty,type=bind,consistency=cached",
-		"source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
-		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+		"source=${localWorkspaceFolder}/../thirdparty,target=${containerWorkspaceFolder}/../thirdparty,type=bind,consistency=cached",
+		// "source=${localEnv:HOME}${localEnv:USERPROFILE}/WorkFiles/thirdparty,target=/workspaces/thirdparty,type=bind,consistency=cached",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [
-		// 9798,
-		// 9101,
-		// 8080
-	],
-	"appPort" :[
-		"8080:8080"
-	],
-	"portsAttributes": {
-		"9798": {
-			"label": "udp:9798"
-		}
-	},
+	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "gcc -v",
-	// Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
+	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
 }

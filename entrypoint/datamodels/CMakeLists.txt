@@ -45,7 +45,7 @@ target_include_directories(datamodels
 )
 
 target_link_libraries(datamodels
-    PUBLIC cereal
+    PUBLIC cereal::cereal
     PUBLIC protobuf_helper_datamodels
 )
 
