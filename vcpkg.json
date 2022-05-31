@@ -1,7 +1,9 @@
 {
     "name": "httpserver",
-    "version-string": "0.1",
+    "version-semver": "1.0.0",
     "builtin-baseline": "14e7bb4ae24616ec54ff6b2f6ef4e8659434ea44",
+    "description": "A simple utility library",
+	"homepage": "https://github.com/vtpl1/http_server",
     "dependencies": [
         "abseil",
         "boost-beast",
@@ -24,6 +26,11 @@
         {
             "name": "abseil",
             "version-string": "20211102.1",
+            "port-version": 0
+        },
+        {
+            "name": "boost-beast",
+            "version": "1.79.0",
             "port-version": 0
         },
         {
@@ -55,6 +62,11 @@
             "name": "spdlog",
             "version-semver": "1.10.0",
             "port-version": 0
+        },
+        {
+            "name": "yaml-cpp",
+            "version-semver": "0.7.0",
+            "port-version": 1
         }
     ]
 }
