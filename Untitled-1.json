@@ -1,0 +1,48 @@
+,
+    // "overrides": [
+    //     {
+    //         "name": "abseil",
+    //         "version-string": "20211102.1",
+    //         "port-version": 0
+    //     },
+    //     {
+    //         "name": "boost-beast",
+    //         "version": "1.79.0",
+    //         "port-version": 0
+    //     },
+    //     {
+    //         "name": "catch2",
+    //         "version-string": "2.13.9",
+    //         "port-version": 0
+    //     },
+    //     {
+    //         "name": "cereal",
+    //         "version": "1.3.1",
+    //         "port-version": 0
+    //     },
+    //     {
+    //         "name": "grpc",
+    //         "version-semver": "1.44.0",
+    //         "port-version": 0
+    //     },
+    //     {
+    //         "name": "poco",
+    //         "version": "1.11.2",
+    //         "port-version": 0
+    //     },
+    //     {
+    //         "name": "protobuf",
+    //         "version-semver": "3.19.4",
+    //         "port-version": 0
+    //     },
+    //     {
+    //         "name": "yaml-cpp",
+    //         "version-semver": "0.7.0",
+    //         "port-version": 1
+    //     },
+    //     {
+    //         "name": "logutil",
+    //         "version-semver": "1.0.14",
+    //         "port-version": 0
+    //     }
+    // ]

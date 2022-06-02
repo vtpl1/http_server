@@ -29,11 +29,11 @@ private:
   std::string _session_folder;
   Monitor(std::string session_folder, std::string target_host_address, uint16_t target_port);
   ~Monitor();
-  void setStatusInternal(uint64_t id);
+  std::atomic_uint_fast64_t& setStatusInternal(uint64_t id);
   void run();
 
 public:
-  static void setStatus(int16_t app_id, int16_t channel_id, uint64_t id);
+  static std::atomic_uint_fast64_t& setStatus(int16_t app_id, int16_t channel_id, uint64_t id);
   static Monitor& getInstance();
   static Monitor& getInstance(std::string session_folder);
   static Monitor& getInstance(std::string session_folder, std::string target_host_address, uint16_t target_port);

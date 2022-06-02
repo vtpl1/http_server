@@ -8,7 +8,7 @@ else()
 find_package(Poco REQUIRED Util NetSSL)
 endif()
 find_package(Protobuf COMPONENTS libprotobuf protoc)
-find_package(spdlog REQUIRED)
+find_package(logutil REQUIRED)
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS interfaces/status.proto)
 
@@ -50,8 +50,8 @@ target_include_directories(resource_monitor
 
 target_link_libraries(resource_monitor
     PUBLIC Poco::Util
-    PUBLIC spdlog::spdlog
     PUBLIC protobuf_helper_resource_monitor
+    PUBLIC logutil::logutil
 )
 if(MSVC)
 target_link_libraries(resource_monitor
