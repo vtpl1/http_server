@@ -55,9 +55,3 @@ target_precompile_headers(datamodels
     PUBLIC inc/media_command.h
     PUBLIC inc/job_media_command_map.h
 )
-
-set_property(TARGET protobuf_helper_datamodels PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
-set_property(TARGET datamodels PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

@@ -5,10 +5,10 @@
 #include <Poco/Net/NetException.h>
 #include <array>
 #include <cereal/archives/binary.hpp>
+#include <logutil/logging.h>
 #include <memory>
 #include <thread>
 
-#include "logging.h"
 // #include "rpc_handler.h"
 #include "rpc_manager.h"
 #include "web_socket_request_handler.h"

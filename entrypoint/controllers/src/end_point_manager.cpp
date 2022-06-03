@@ -5,10 +5,10 @@
 #include <Poco/Path.h>
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
+#include <logutil/logging.h>
 #include <regex>
 
 #include "end_point_manager.h"
-#include "logging.h"
 
 constexpr int CHANNEL_REQ_EXP_TIME_MILI_SEC = 30 * 1000;
 

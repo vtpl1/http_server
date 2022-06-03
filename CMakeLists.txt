@@ -4,12 +4,14 @@ project(http_server)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+add_definitions(-DPOCO_STATIC)
 
+# if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 # set(CMAKE_CXX_CLANG_TIDY
 #     clang-tidy;)
-
 # set(CMAKE_C_CLANG_TIDY
 #     clang-tidy;)
+# endif()
 
 find_package(Git)
 if(Git_FOUND)
@@ -34,11 +36,9 @@ if(Git_FOUND)
     set(GIT_DETAILS "${GIT_COMMIT_BRANCH}_${GIT_COMMIT_HASH}_[${GIT_COMMIT_DATE}]")
 
     add_definitions(-DGIT_DETAILS="${GIT_DETAILS}")
-
-
 endif() #git
 
 add_subdirectory(resource_monitor)
-# add_subdirectory(entrypoint)
-# add_subdirectory(processes)
-# add_subdirectory(tests)
+add_subdirectory(entrypoint)
+add_subdirectory(processes)
+add_subdirectory(tests)

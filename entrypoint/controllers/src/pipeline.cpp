@@ -4,8 +4,8 @@
 
 #include <Poco/Exception.h>
 #include <Poco/Path.h>
+#include <logutil/logging.h>
 
-#include "logging.h"
 #include "pipeline.h"
 Pipeline::Pipeline(std::string command)
     : Pipeline(std::move(command), std::vector<std::string>(), Poco::Path::current())

@@ -4,6 +4,7 @@
 
 find_package(Poco REQUIRED Foundation)
 find_package(yaml-cpp REQUIRED)
+find_package(logutil REQUIRED)
 
 add_library(controllers STATIC
     src/end_point_manager.cpp
@@ -28,7 +29,7 @@ target_include_directories(controllers
 )
 
 target_link_libraries(controllers
-    PRIVATE utils
+    PRIVATE logutil::logutil
     PUBLIC datamodels
     PUBLIC http_server_helper
     PUBLIC web_socket_send_receive_helper
@@ -36,6 +37,3 @@ target_link_libraries(controllers
     PRIVATE Poco::Foundation
     PRIVATE yaml-cpp
 )
-
-set_property(TARGET controllers PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

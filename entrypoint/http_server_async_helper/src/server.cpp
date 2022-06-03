@@ -3,9 +3,9 @@
 // *****************************************************
 
 #include <iostream>
+#include <logutil/logging.h>
 
 #include "http_session.hpp"
-#include "logging.h"
 #include "server.hpp"
 
 constexpr int CONCURRENCY_HINT = 1;

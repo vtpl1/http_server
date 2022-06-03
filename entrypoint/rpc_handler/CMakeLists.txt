@@ -2,6 +2,8 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
+find_package(cereal REQUIRED)
+find_package(logutil REQUIRED)
 add_library(rpc_handler STATIC
     src/rpc_manager.cpp
     src/function_request_data.cpp
@@ -21,8 +23,6 @@ target_include_directories(rpc_handler
 )
 
 target_link_libraries(rpc_handler
-    PRIVATE utils
+    PRIVATE logutil::logutil
+    PUBLIC cereal::cereal
 )
-
-set_property(TARGET rpc_handler PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

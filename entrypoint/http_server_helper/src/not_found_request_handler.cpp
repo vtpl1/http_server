@@ -1,9 +1,9 @@
 // *****************************************************
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
+#include <logutil/logging.h>
 #include <sstream>
 
-#include "logging.h"
 #include "not_found_request_handler.h"
 
 void NotFoundRequestHandler::staticHandleRequest(Poco::Net::HTTPServerRequest& request,

@@ -1,4 +1,5 @@
 find_package(Poco REQUIRED Util)
+find_package(logutil REQUIRED)
 
 add_subdirectory(datamodels)
 add_subdirectory(rpc_handler)
@@ -12,11 +13,8 @@ add_executable(entrypoint
 )
 
 target_link_libraries(entrypoint
-    PRIVATE utils
+    PRIVATE logutil::logutil
     PRIVATE controllers
     PRIVATE datamodels
     PRIVATE Poco::Util
 )
-
-set_property(TARGET entrypoint PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

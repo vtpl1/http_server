@@ -2,6 +2,7 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
+find_package(logutil REQUIRED)
 if (MSVC)
 find_package(Poco REQUIRED Foundation Util NetSSLWin)
 else()
@@ -40,7 +41,7 @@ target_include_directories(http_server_helper
 )
 
 target_link_libraries(http_server_helper
-    PRIVATE utils
+    PRIVATE logutil::logutil
     PUBLIC rpc_handler
     PUBLIC web_socket_send_receive_helper
     PUBLIC Poco::Foundation
@@ -55,5 +56,3 @@ target_link_libraries(http_server_helper
     PUBLIC Poco::NetSSL
 )
 endif()
-set_property(TARGET http_server_helper PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

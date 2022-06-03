@@ -2,7 +2,7 @@
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
 
-
+find_package(logutil REQUIRED)
 find_package(Poco REQUIRED Foundation Net)
 
 add_library(web_socket_send_receive_helper STATIC
@@ -18,11 +18,8 @@ target_include_directories(web_socket_send_receive_helper
 )
 
 target_link_libraries(web_socket_send_receive_helper
-    PRIVATE utils
+    PRIVATE logutil::logutil
     # PUBLIC rpc_handler
     PUBLIC Poco::Foundation
     PUBLIC Poco::Net
 )
-
-set_property(TARGET web_socket_send_receive_helper PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

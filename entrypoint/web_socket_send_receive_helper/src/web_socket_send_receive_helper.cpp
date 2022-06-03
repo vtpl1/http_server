@@ -4,8 +4,8 @@
 
 #include <Poco/Net/NetException.h>
 #include <chrono>
+#include <logutil/logging.h>
 
-#include "logging.h"
 #include "web_socket_send_receive_helper.h"
 
 constexpr int MAX_BUFFER_SIZE = 1024;

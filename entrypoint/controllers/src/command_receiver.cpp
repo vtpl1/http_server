@@ -11,10 +11,10 @@
 #include <array>
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
+#include <logutil/logging.h>
 #include <string>
 
 #include "command_receiver.h"
-#include "logging.h"
 // #include "rpc_handler.h"
 #include "rpc_manager.h"
 #include "web_socket_send_receive_helper.h"

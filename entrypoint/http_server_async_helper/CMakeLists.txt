@@ -5,6 +5,8 @@
 find_package(Boost REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Poco REQUIRED Util)
+find_package(logutil REQUIRED)
+
 add_library(http_server_async_helper STATIC
     src/http_server.cpp
     src/http_session.cpp
@@ -36,13 +38,10 @@ target_include_directories(http_server_async_helper
 )
 
 target_link_libraries(http_server_async_helper
-    PRIVATE utils
+    PRIVATE logutil::logutil
     PUBLIC rpc_handler
     PRIVATE Boost::boost
     PRIVATE Poco::Util
     PRIVATE OpenSSL::SSL
     PRIVATE OpenSSL::Crypto
 )
-
-set_property(TARGET http_server_async_helper PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

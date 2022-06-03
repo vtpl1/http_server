@@ -1,7 +1,6 @@
 # *****************************************************
 #    Copyright 2022 Videonetics Technology Pvt Ltd
 # *****************************************************
-
 if(MSVC)
 find_package(Poco REQUIRED Util NetSSLWin)
 else()
@@ -43,6 +42,10 @@ add_library(resource_monitor STATIC
     src/monitor.cpp
 )
 
+target_precompile_headers(resource_monitor
+  PUBLIC inc/monitor.h
+)
+
 target_include_directories(resource_monitor
     PUBLIC inc
 )
@@ -50,8 +53,8 @@ target_include_directories(resource_monitor
 
 target_link_libraries(resource_monitor
     PUBLIC Poco::Util
+    PRIVATE logutil::logutil
     PUBLIC protobuf_helper_resource_monitor
-    PUBLIC logutil::logutil
 )
 if(MSVC)
 target_link_libraries(resource_monitor
@@ -71,11 +74,11 @@ target_link_libraries(resource_monitor_test
     PUBLIC resource_monitor
 )
 
-set_property(TARGET protobuf_helper_resource_monitor PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# set_property(TARGET protobuf_helper_resource_monitor PROPERTY
+#     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set_property(TARGET resource_monitor PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# set_property(TARGET resource_monitor PROPERTY
+#     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set_property(TARGET resource_monitor_test PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# set_property(TARGET resource_monitor_test PROPERTY
+#     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

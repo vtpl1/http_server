@@ -3,10 +3,10 @@
 // *****************************************************
 
 #include <cereal/archives/binary.hpp>
+#include <logutil/logging.h>
 
 #include "function_request_data.h"
 #include "function_response_data.h"
-#include "logging.h"
 #include "rpc_manager.h"
 
 RpcManager::RpcManager() { start(); }
