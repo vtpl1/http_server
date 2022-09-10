@@ -1,12 +1,11 @@
-FROM ubuntu:20.04
-
+FROM ubuntu:18.04
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends ca-certificates software-properties-common \
-    git curl wget ninja-build build-essential gdb python3-pip python3-setuptools \
-    python3-dev python3-venv pkg-config zip unzip tar subversion nasm
+    git curl wget ninja-build build-essential gdb python3-tk python3-pip python3-setuptools \
+    python3-dev python3-venv pkg-config zip unzip tar subversion iputils-ping ccache nasm
 
-RUN wget -O cmake.sh https://github.com/Kitware/CMake/releases/download/v3.20.5/cmake-3.20.5-linux-x86_64.sh \
+RUN wget -O cmake.sh https://github.com/Kitware/CMake/releases/download/v3.22.4/cmake-3.22.4-linux-x86_64.sh \
     && sh cmake.sh --prefix=/usr/local/ --exclude-subdir && rm -rf cmake.sh
 
 RUN apt-get update && apt-get -y install gpg-agent
@@ -14,12 +13,8 @@ RUN apt-get update && apt-get -y install gpg-agent
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|apt-key add -
 
 ARG LLVM_VERSION=13
-
-RUN add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-$LLVM_VERSION main"
-
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install clang-13 --install-suggests
-
+# ARG OS_NAME=bionic
+RUN add-apt-repository "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-$LLVM_VERSION main"
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install clang-$LLVM_VERSION lldb-$LLVM_VERSION lld-$LLVM_VERSION clangd-$LLVM_VERSION \
@@ -29,18 +24,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     libclang-common-$LLVM_VERSION-dev libclang-$LLVM_VERSION-dev \
     libclang-cpp$LLVM_VERSION-dev libunwind-$LLVM_VERSION-dev
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install ccache
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install clang-13 clang-tools-13 \
-#     libclang-common-13-dev libclang-13-dev libclang1-13 \
-#     clang-format-13 clang-tidy-13 \
-#     lldb-13 lld-13
-
-
-# ARG all="all"
-# RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh) $(all)"
-# COPY ./update-alternatives-clang.sh ./update-alternatives-clang.sh
 ARG priority=100
 
 RUN update-alternatives \
@@ -55,7 +38,6 @@ RUN update-alternatives \
         --slave   /usr/bin/llvm-extract      llvm-extract     /usr/bin/llvm-extract-${LLVM_VERSION} \
         --slave   /usr/bin/llvm-link         llvm-link        /usr/bin/llvm-link-${LLVM_VERSION} \
         --slave   /usr/bin/llvm-mc           llvm-mc          /usr/bin/llvm-mc-${LLVM_VERSION} \
-        --slave   /usr/bin/llvm-mcmarkup     llvm-mcmarkup    /usr/bin/llvm-mcmarkup-${LLVM_VERSION} \
         --slave   /usr/bin/llvm-nm           llvm-nm          /usr/bin/llvm-nm-${LLVM_VERSION} \
         --slave   /usr/bin/llvm-objdump      llvm-objdump     /usr/bin/llvm-objdump-${LLVM_VERSION} \
         --slave   /usr/bin/llvm-ranlib       llvm-ranlib      /usr/bin/llvm-ranlib-${LLVM_VERSION} \
@@ -76,7 +58,6 @@ RUN update-alternatives \
         --slave   /usr/bin/clang-cpp             clang-cpp             /usr/bin/clang-cpp-${LLVM_VERSION} \
         --slave   /usr/bin/clang-format          clang-format          /usr/bin/clang-format-${LLVM_VERSION} \
         --slave   /usr/bin/clang-format-diff     clang-format-diff     /usr/bin/clang-format-diff-${LLVM_VERSION} \
-        --slave   /usr/bin/clang-import-test     clang-import-test     /usr/bin/clang-import-test-${LLVM_VERSION} \
         --slave   /usr/bin/clang-include-fixer   clang-include-fixer   /usr/bin/clang-include-fixer-${LLVM_VERSION} \
         --slave   /usr/bin/clang-offload-bundler clang-offload-bundler /usr/bin/clang-offload-bundler-${LLVM_VERSION} \
         --slave   /usr/bin/clang-query           clang-query           /usr/bin/clang-query-${LLVM_VERSION} \
@@ -86,7 +67,20 @@ RUN update-alternatives \
         --slave   /usr/bin/lldb                  lldb                  /usr/bin/lldb-${LLVM_VERSION} \
         --slave   /usr/bin/lldb-server           lldb-server           /usr/bin/lldb-server-${LLVM_VERSION}
 
+# RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+#     && apt-get -y install --no-install-recommends gcc-8 g++-8
+
 ENV SHELL /bin/bash
+
+RUN pip3 install -U pip
+RUN pip3 install numpy
+RUN pip3 install virtualenv
+RUN pip3 install black pylint pytest yapf
+# RUN pip3 install numpy opencv-python
+RUN pip install ruamel.yaml
+RUN pip install requests
+
 
 ARG USERNAME=vscode
 ARG USER_UID=1000

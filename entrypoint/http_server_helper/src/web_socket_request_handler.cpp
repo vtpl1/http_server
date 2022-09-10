@@ -5,10 +5,10 @@
 #include <Poco/Net/NetException.h>
 #include <array>
 #include <cereal/archives/binary.hpp>
+#include <logutil/logging.h>
 #include <memory>
 #include <thread>
 
-#include "logging.h"
 // #include "rpc_handler.h"
 #include "rpc_manager.h"
 #include "web_socket_request_handler.h"
@@ -33,14 +33,21 @@ void WebSocketRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& reques
     WebSocketSendReceiveHelper web_socket_send_receive_helper(ws, false);
     while (!stopped) {
       int n = 0;
-      if (!web_socket_send_receive_helper.readDataAndprocessPingPong(n)) {
+      bool is_binary = false;
+      if (!web_socket_send_receive_helper.readDataAndprocessPingPong(n, is_binary)) {
         break;
       }
       if (n > 0) {
-        std::shared_ptr<std::vector<uint8_t>> valid_buffer = std::make_shared<std::vector<uint8_t>>();
         std::vector<uint8_t> buffer = web_socket_send_receive_helper.get_buffer();
-        copy(buffer.begin(), buffer.begin() + n, back_inserter(*valid_buffer));
-        RpcManager::put_request_buffer(valid_buffer);
+        if (is_binary) {
+          std::shared_ptr<std::vector<uint8_t>> valid_buffer = std::make_shared<std::vector<uint8_t>>();
+          copy(buffer.begin(), buffer.begin() + n, back_inserter(*valid_buffer));
+          RpcManager::put_request_buffer(valid_buffer);
+        } else {
+          std::stringstream ss;
+          std::copy(buffer.begin(), buffer.begin() + n, std::ostream_iterator<uint8_t>(ss));
+          web_socket_send_receive_helper.sendString(ss.str());
+        }
       }
 
       std::shared_ptr<std::vector<uint8_t>> buf = RpcManager::get_send_buffer();

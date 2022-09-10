@@ -1,0 +1,10 @@
+https://stackoverflow.com/questions/10175812/how-to-generate-a-self-signed-ssl-certificate-using-openssl
+https://tarunlalwani.com/post/self-signed-certificates-trusting-them/
+
+openssl req -config ./openssl.conf -new -x509 -sha256 -newkey rsa:4096 -nodes \
+    -keyout key.pem -days 3650 -out cert.pem
+
+openssl pkcs12 -export -in cert.pem -inkey key.pem -out certificate.pfx -certfile CACert.cer
+
+
+curl -k "https://resources.videonetics.com:8080/testme"

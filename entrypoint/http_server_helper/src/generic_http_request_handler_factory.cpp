@@ -5,11 +5,11 @@
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Path.h>
+#include <logutil/logging.h>
 #include <regex>
 
 #include "file_request_handler.h"
 #include "generic_http_request_handler_factory.h"
-#include "logging.h"
 #include "method_not_supported_request_handler.h"
 #include "not_found_request_handler.h"
 #include "options_request_handler.h"

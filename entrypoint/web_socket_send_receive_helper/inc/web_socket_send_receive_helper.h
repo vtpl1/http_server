@@ -5,7 +5,6 @@
 #ifndef web_socket_send_receive_helper_h
 #define web_socket_send_receive_helper_h
 
-
 #include <Poco/Net/WebSocket.h>
 #include <vector>
 
@@ -22,13 +21,15 @@ private:
   bool processPingPong(int& flags);
   bool sendData(Poco::Net::WebSocket::FrameOpcodes flags);
   bool sendData(std::vector<uint8_t>& buffer, unsigned flags);
+  bool sendData(const void* buffer, int length, unsigned flags);
 
 public:
   WebSocketSendReceiveHelper(Poco::Net::WebSocket& web_socket, bool send_periodic_ping = false);
   ~WebSocketSendReceiveHelper() = default;
-  bool readDataAndprocessPingPong(int& n);
+  bool readDataAndprocessPingPong(int& n, bool& is_binary);
   bool sendData(std::vector<uint8_t>& buffer);
+  bool sendString(const std::string& buffer);
   std::vector<uint8_t> get_buffer();
 };
 
-#endif	// web_socket_send_receive_helper_h
+#endif // web_socket_send_receive_helper_h

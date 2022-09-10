@@ -3,7 +3,6 @@
 // *****************************************************
 
 #include <Poco/ErrorHandler.h>
-#include <Poco/Net/Net.h>
 #include <Poco/Util/AbstractConfiguration.h>
 #include <Poco/Util/HelpFormatter.h>
 #include <Poco/Util/ServerApplication.h>
@@ -12,6 +11,7 @@
 #include <chrono>
 #include <csignal>
 #include <iostream>
+#include <logutil/logging.h>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -20,7 +20,6 @@
 #include "end_point_manager.h"
 #include "job_list_manager.h"
 #include "job_to_media_command_mapper.h"
-#include "logging.h"
 #include "pipeline.h"
 #include "pipeline_manager.h"
 

@@ -3,9 +3,9 @@
 // *****************************************************
 #include <algorithm>
 #include <cereal/archives/binary.hpp>
+#include <logutil/logging.h>
 
 #include "job_list_manager.h"
-#include "logging.h"
 #include "rpc_manager.h"
 
 JobListManager::JobListManager()
@@ -15,9 +15,9 @@ JobListManager::JobListManager()
     RpcManager::call_remote_function("on_add_job_return");
   });
 
-  RpcManager::register_function("on_add_job_return", [this](std::shared_ptr<std::vector<uint8_t>>  /*ret*/) {});
+  RpcManager::register_function("on_add_job_return", [this](std::shared_ptr<std::vector<uint8_t>> /*ret*/) {});
 
-  RpcManager::register_function("delete_job", [this](std::shared_ptr<std::vector<uint8_t>>  arg) {
+  RpcManager::register_function("delete_job", [this](std::shared_ptr<std::vector<uint8_t>> arg) {
     delete_job(*get_obj<Job>(std::move(arg)));
     RpcManager::call_remote_function("on_delete_job_return");
   });
@@ -211,7 +211,7 @@ void JobListManager::add_remote_job(const Job& job)
   //   std::copy(s.begin(), s.end(), std::back_inserter(args));
   // }
   RpcManager::call_remote_function("add_job", put_obj<Job>(job));
-  //job
+  // job
 }
 void JobListManager::update_remote_job_list(const JobList& job_list)
 {
@@ -226,7 +226,7 @@ void JobListManager::update_remote_job_list(const JobList& job_list)
   //   std::copy(s.begin(), s.end(), std::back_inserter(args));
   // }
   RpcManager::call_remote_function("update_job_list", put_obj<JobList>(job_list));
-  //job_list
+  // job_list
 }
 void JobListManager::clear_remote_job_list()
 {

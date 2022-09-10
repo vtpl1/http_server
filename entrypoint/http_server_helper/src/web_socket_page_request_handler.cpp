@@ -18,7 +18,7 @@ void WebSocketPageRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& re
   ostr << "{";
   ostr << "  if (\"WebSocket\" in window)";
   ostr << "  {";
-  ostr << "    var ws = new WebSocket(\"ws://" << request.serverAddress().toString() << "/ws\");";
+  ostr << "    var ws = new WebSocket(\"wss://" << request.getHost() << "/ws\");";
   ostr << "    ws.onopen = function()";
   ostr << "      {";
   ostr << "        ws.send(\"Hello, world!\");";

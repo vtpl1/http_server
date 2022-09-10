@@ -4,9 +4,9 @@
 
 #include <Poco/File.h>
 #include <Poco/Path.h>
+#include <logutil/logging.h>
 
 #include "http_server.h"
-
 
 constexpr int EXPIRES_AFTER_TIME_OUT = 30;
 constexpr int PARSER_BODY_LIMIT = 10000;

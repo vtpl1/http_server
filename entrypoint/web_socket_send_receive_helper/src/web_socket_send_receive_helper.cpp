@@ -3,6 +3,8 @@
 // *****************************************************
 
 #include <Poco/Net/NetException.h>
+#include <chrono>
+#include <logutil/logging.h>
 
 #include "web_socket_send_receive_helper.h"
 
@@ -35,13 +37,25 @@ bool WebSocketSendReceiveHelper::sendData(std::vector<uint8_t>& buffer)
   return sendData(buffer, flag);
 }
 
-bool WebSocketSendReceiveHelper::sendData(std::vector<uint8_t>& buffer, unsigned flag)
+bool WebSocketSendReceiveHelper::sendString(const std::string& buffer)
+{
+  unsigned flag = 0;
+  flag |= Poco::Net::WebSocket::FRAME_TEXT;
+  return sendData(buffer.c_str(), buffer.size(), flag);
+}
+
+bool WebSocketSendReceiveHelper::sendData(std::vector<uint8_t>& buffer, unsigned flags)
+{
+  return sendData(buffer.data(), buffer.size(), flags);
+}
+
+bool WebSocketSendReceiveHelper::sendData(const void* buffer, int length, unsigned flags)
 {
   // Poco::Net::WebSocket::FRAME_OP_PONG
-  RAY_LOG_INF << "Sent: " << buffer.size() << " , " << flag;
+  RAY_LOG_INF << "Sent: " << length << " , " << flags;
   try {
-    int n = _web_socket.sendFrame(buffer.data(), static_cast<int>(buffer.size()), static_cast<int>(flag));
-    if (n != buffer.size()) {
+    int n = _web_socket.sendFrame(buffer, length, static_cast<int>(flags));
+    if (n != length) {
       return false;
     }
     _last_op_time =
@@ -53,6 +67,7 @@ bool WebSocketSendReceiveHelper::sendData(std::vector<uint8_t>& buffer, unsigned
   }
   return true;
 }
+
 bool WebSocketSendReceiveHelper::readData(int& n, int& flags)
 {
   bool is_timeout = false;
@@ -109,12 +124,13 @@ bool WebSocketSendReceiveHelper::processPingPong(int& flags)
   return true;
 }
 
-bool WebSocketSendReceiveHelper::readDataAndprocessPingPong(int& n)
+bool WebSocketSendReceiveHelper::readDataAndprocessPingPong(int& n, bool& is_binary)
 {
   int flags = 0;
   if (!readData(n, flags)) {
     return false;
   }
+  is_binary = (n > 0) && (flags & Poco::Net::WebSocket::FRAME_OP_BINARY);
   if (!processPingPong(flags)) {
     return false;
   }

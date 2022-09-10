@@ -6,9 +6,9 @@
 #include <Poco/Path.h>
 #include <cereal/archives/json.hpp>
 #include <fstream>
+#include <logutil/logging.h>
 
 #include "job_to_media_command_mapper.h"
-#include "logging.h"
 
 JobToMediaCommandMapper& JobToMediaCommandMapper::get_instance()
 {

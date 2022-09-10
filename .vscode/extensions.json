@@ -1,7 +1,8 @@
 {
-    "recommendations": [
-        "ms-vscode.cpptools-extension-pack",
-        "notskm.clang-tidy",
-        "wmaurer.change-case"
-    ]
+  "recommendations": [
+      "twxs.cmake",
+      "ms-vscode.cmake-tools",
+      "wmaurer.change-case",
+      "ms-vscode.cpptools"
+  ]
 }

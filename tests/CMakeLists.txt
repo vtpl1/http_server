@@ -9,6 +9,3 @@ target_link_libraries(tests
     PRIVATE controllers
     PRIVATE http_server_helper
 )
-
-set_property(TARGET tests PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

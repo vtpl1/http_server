@@ -2,6 +2,9 @@
 //    Copyright 2022 Videonetics Technology Pvt Ltd
 // *****************************************************
 
+#include <iostream>
+
+
 #include "websocket_session.hpp"
 
 WebsocketSession::WebsocketSession(boost::asio::ip::tcp::socket socket, DocRoots& doc_roots)
