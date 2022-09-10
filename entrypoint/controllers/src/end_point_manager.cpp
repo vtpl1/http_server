@@ -115,7 +115,7 @@ void EndPointManager::run()
     _path.append(url);
     RAY_LOG_INF << "serving: [" << url << "] from: " << _path.toString();
     if (!_svr->set_mount_point(url, _path.toString())) {
-      RAY_LOG_ERR << url << " not found";
+      RAY_LOG_ERR << url << " ******************************* not found [FATAL ERROR]";
     }
   }
   // _svr->set_delay_for_mount_point(".m3u8", 30);

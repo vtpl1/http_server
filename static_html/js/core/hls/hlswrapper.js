@@ -11,6 +11,11 @@ function delayedStartLoad(index) {
 	// init_hls_object(index)
 }
 
+function sleep(delay) {
+	var start = new Date().getTime();
+	while (new Date().getTime() < start + delay);
+}
+
 function init_hls_object(id, index) {
 	if (Hls.isSupported()) {
 		window.g_hls_objects[index] = new Hls(config);
@@ -21,13 +26,10 @@ function init_hls_object(id, index) {
 				console.log("Manifest Parsed");
 				document.getElementById(id).play();
 			});
-			// window.g_hls_objects[index].on(Hls.Events.MEDIA_ATTACHED, function () {
-			// 	console.log("Media Attached");
+			// window.g_hls_objects[index].on(Hls.Events.MEDIA_DETACHED, function () {
+			// 	console.error("Media Detached");
+			// 	window.g_hls_objects[index].attachMedia(document.getElementById(id));
 			// });
-			/*window.g_hls_objects[index].on(Hls.Events.MEDIA_DETACHED, function () {
-				console.error("Media Detached");
-				window.g_hls_objects[index].attachMedia(document.getElementById(id));
-			});*/
 
 			window.g_hls_objects[index].on(Hls.Events.ERROR, function (event, data) {
 				if (data.fatal) {
@@ -39,10 +41,10 @@ function init_hls_object(id, index) {
 							break;
 						case Hls.ErrorTypes.NETWORK_ERROR:
 							console.error('MONOTOSH NETWORK_ERROR :' + data.details);
-							setTimeout(delayedStartLoad, 1 * 1000, index);
+							// setTimeout(function(){console.log("Delaying...");}, 1000);
+							sleep(10000);
 							window.g_hls_objects[index].loadSource(window.g_source_list[index]);
 							window.g_hls_objects[index].startLoad();
-							// window.g_hls_objects[index].recoverMediaError();
 							break;
 						default:
 							console.error('An unrecoverable error occured');

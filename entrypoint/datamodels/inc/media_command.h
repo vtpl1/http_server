@@ -17,9 +17,10 @@ public:
   std::string command{};
   std::string input{};
   std::string output{};
+  std::string timeout{};
   template <class Archive> void serialize(Archive& archive)
   {
-    archive(CEREAL_NVP(command), CEREAL_NVP(input), CEREAL_NVP(output));
+    archive(CEREAL_NVP(command), CEREAL_NVP(input), CEREAL_NVP(output), CEREAL_NVP(timeout));
   }
 };
 

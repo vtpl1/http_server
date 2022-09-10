@@ -39,6 +39,8 @@ void PipelineManager::run()
       args.emplace_back(m.input);
       args.emplace_back("-o");
       args.emplace_back(m.output);
+      args.emplace_back("-t");
+      args.emplace_back(m.timeout);
       _pipeline_map.insert(std::make_pair(job, std::make_unique<Pipeline>(m.command, args, _base_dir)));
       _jlm.add_running_job(job);
     }

@@ -60,6 +60,7 @@ void JobToMediaCommandMapper::load_defaults()
     media_command.command = "media_converter";
     media_command.input = "rtmp://0.0.0.0:9001";
     media_command.output = "./videos/1/play.m3u8";
+    media_command.timeout = fmt::format("{}", 90);
 
     map.map.emplace(job, media_command);
   } else {
@@ -69,6 +70,7 @@ void JobToMediaCommandMapper::load_defaults()
     media_command.command = "media_converter";
     media_command.input = "rtsp://admin:AdmiN1234@192.168.0.58/h264/ch1/main/";
     media_command.output = "rtmp://localhost:9001";
+    media_command.timeout = fmt::format("{}", 10);
     map.map.emplace(job, media_command);
   }
 }
