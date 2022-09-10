@@ -41,7 +41,7 @@ function init_hls_object(id, index) {
 							break;
 						case Hls.ErrorTypes.NETWORK_ERROR:
 							console.error('MONOTOSH NETWORK_ERROR :' + data.details);
-							// setTimeout(function(){console.log("Delaying...");}, 1000);
+							console.log("Delaying for 10 seconds...");
 							sleep(10000);
 							window.g_hls_objects[index].loadSource(window.g_source_list[index]);
 							window.g_hls_objects[index].startLoad();

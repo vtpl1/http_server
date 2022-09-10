@@ -114,4 +114,5 @@
         "source_location": "cpp",
         "rope": "cpp"
     },
+    "python.formatting.provider": "yapf",
 }

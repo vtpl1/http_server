@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: load_tester",
+            "type": "python",
+            "request": "launch",
+            "program": "load_tester.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "entrypoint",
             "type": "cppvsdbg",
             "request": "launch",
@@ -136,7 +144,9 @@
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
             //"program": "${workspaceFolder}/build/tests/Debug/tests.exe",
-            "args": ["[rpc]"],
+            "args": [
+                "[rpc]"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -146,7 +156,9 @@
                 "type": "cppdbg",
                 "request": "launch",
                 "program": "${command:cmake.launchTargetPath}",
-                "args": ["[rpc]"],
+                "args": [
+                    "[rpc]"
+                ],
                 "stopAtEntry": false,
                 "cwd": "${workspaceFolder}",
                 "environment": [],
