@@ -13,7 +13,7 @@ add_executable(entrypoint
 )
 
 target_link_libraries(entrypoint
-    PRIVATE logutil::logutil
+    PRIVATE logutil::core
     PRIVATE controllers
     PRIVATE datamodels
     PRIVATE Poco::Util

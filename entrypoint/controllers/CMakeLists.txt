@@ -29,7 +29,7 @@ target_include_directories(controllers
 )
 
 target_link_libraries(controllers
-    PRIVATE logutil::logutil
+    PRIVATE logutil::core
     PUBLIC datamodels
     PUBLIC http_server_helper
     PUBLIC web_socket_send_receive_helper

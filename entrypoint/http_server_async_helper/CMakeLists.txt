@@ -38,7 +38,7 @@ target_include_directories(http_server_async_helper
 )
 
 target_link_libraries(http_server_async_helper
-    PRIVATE logutil::logutil
+    PRIVATE logutil::core
     PUBLIC rpc_handler
     PRIVATE Boost::boost
     PRIVATE Poco::Util

@@ -23,6 +23,6 @@ target_include_directories(rpc_handler
 )
 
 target_link_libraries(rpc_handler
-    PRIVATE logutil::logutil
+    PRIVATE logutil::core
     PUBLIC cereal::cereal
 )

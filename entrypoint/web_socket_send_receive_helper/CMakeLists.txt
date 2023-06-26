@@ -18,7 +18,7 @@ target_include_directories(web_socket_send_receive_helper
 )
 
 target_link_libraries(web_socket_send_receive_helper
-    PRIVATE logutil::logutil
+    PRIVATE logutil::core
     # PUBLIC rpc_handler
     PUBLIC Poco::Foundation
     PUBLIC Poco::Net

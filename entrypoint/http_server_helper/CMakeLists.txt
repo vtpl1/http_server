@@ -41,7 +41,7 @@ target_include_directories(http_server_helper
 )
 
 target_link_libraries(http_server_helper
-    PRIVATE logutil::logutil
+    PRIVATE logutil::core
     PUBLIC rpc_handler
     PUBLIC web_socket_send_receive_helper
     PUBLIC Poco::Foundation

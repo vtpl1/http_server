@@ -13,7 +13,6 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS interfaces/status.proto)
 
 add_library(protobuf_helper_resource_monitor STATIC
     src/protobuf_helper.cpp
-
     ${PROTO_SRCS}
 )
 
@@ -53,7 +52,7 @@ target_include_directories(resource_monitor
 
 target_link_libraries(resource_monitor
     PUBLIC Poco::Util
-    PRIVATE logutil::logutil
+    PRIVATE logutil::core
     PUBLIC protobuf_helper_resource_monitor
 )
 if(MSVC)

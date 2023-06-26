@@ -21,8 +21,7 @@
         "protobuf",
         "yaml-cpp",
         {
-            "name": "logutil",
-            "version>=": "1.2.1"
+            "name": "logutil"
         }
     ]
 }
